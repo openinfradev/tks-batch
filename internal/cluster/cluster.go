@@ -33,6 +33,11 @@ func New(db *gorm.DB) *ClusterAccessor {
 	}
 }
 
+// For Unittest
+func (x *ClusterAccessor) GetDb() *gorm.DB {
+	return x.db
+}
+
 func (x *ClusterAccessor) GetIncompleteClusters() ([]Cluster, error) {
 	var clusters []Cluster
 

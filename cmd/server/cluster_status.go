@@ -9,7 +9,7 @@ import (
 	pb "github.com/openinfradev/tks-proto/tks_pb"
 )
 
-func workferClusterStatus(ctx context.Context) error {
+func processClusterStatus(ctx context.Context) error {
 	// get clusters
 	clusters, err := clusterAccessor.GetIncompleteClusters()
 	if err != nil {

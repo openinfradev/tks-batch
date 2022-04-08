@@ -31,6 +31,11 @@ func New(db *gorm.DB) *ApplicationAccessor {
 	}
 }
 
+// For Unittest
+func (x *ApplicationAccessor) GetDb() *gorm.DB {
+	return x.db
+}
+
 func (x *ApplicationAccessor) GetIncompleteAppGroups() ([]ApplicationGroup, error) {
 	var appGroups []ApplicationGroup
 

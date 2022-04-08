@@ -9,7 +9,7 @@ import (
 	pb "github.com/openinfradev/tks-proto/tks_pb"
 )
 
-func workferAppGroupStatus(ctx context.Context) error {
+func processAppGroupStatus(ctx context.Context) error {
 
 	// get appgroups
 	appGroups, err := applicationAccessor.GetIncompleteAppGroups()
@@ -78,7 +78,7 @@ func workferAppGroupStatus(ctx context.Context) error {
 			log.Debug(fmt.Sprintf("update status!! appGroupId [%s], newStatus [%s], newMessage [%s]", appGroupId, newStatus, newMessage))
 			err := applicationAccessor.UpdateAppGroupStatus(appGroupId, newStatus, newMessage, workflowId)
 			if err != nil {
-				log.Error("Failed to update cluster status err : ", err)
+				log.Error("Failed to update appgroup status err : ", err)
 				continue
 			}
 		}

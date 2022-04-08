@@ -77,11 +77,11 @@ func main() {
 	}
 
 	for {
-		err = workferClusterStatus(ctx)
+		err = processClusterStatus(ctx)
 		if err != nil {
 			log.Error(err)
 		}
-		err = workferAppGroupStatus(ctx)
+		err = processAppGroupStatus(ctx)
 		if err != nil {
 			log.Error(err)
 		}
