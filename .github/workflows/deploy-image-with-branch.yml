@@ -26,7 +26,7 @@ jobs:
       with:
         push: true
         tags: |
-          sktcloud/tks-cluster-lcm:${{ github.head_ref }}-${{ github.sha }}
-          sktcloud/tks-cluster-lcm:latest
+          sktcloud/tks-batch:${{ github.head_ref }}-${{ github.sha }}
+          sktcloud/tks-batch:latest
         build-args: |
           PRV_GITHUB_TOKEN=${{ secrets.PRV_GITHUB_TOKEN }}
