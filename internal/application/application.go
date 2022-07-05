@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 
 	"github.com/openinfradev/tks-common/pkg/log"
@@ -12,7 +11,7 @@ import (
 )
 
 type ApplicationGroup struct {
-	ID         uuid.UUID `gorm:"primarykey;type:uuid;default:uuid_generate_v4()"`
+	ID         string `gorm:"primarykey"`
 	Status     pb.AppGroupStatus
 	StatusDesc string
 	WorkflowId string

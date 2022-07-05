@@ -24,7 +24,9 @@ jobs:
       id: docker_build
       uses: docker/build-push-action@v2
       with:
-        push: true
-        tags: sktcloud/tks-batch:latest
+        push: push
+        tags: |
+          sktcloud/tks-batch:${{ github.head_ref }}-${{ github.sha }}
+          sktcloud/tks-batch:latest
         build-args: |
           PRV_GITHUB_TOKEN=${{ secrets.PRV_GITHUB_TOKEN }}

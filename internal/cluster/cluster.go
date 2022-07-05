@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 
 	"github.com/openinfradev/tks-common/pkg/log"
@@ -13,7 +12,7 @@ import (
 
 // Cluster represents a kubernetes cluster information.
 type Cluster struct {
-	ID         uuid.UUID `gorm:"primarykey;type:uuid;default:uuid_generate_v4()"`
+	ID         string `gorm:"primarykey"`
 	WorkflowId string
 	Status     pb.ClusterStatus
 	StatusDesc string
