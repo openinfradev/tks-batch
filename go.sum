@@ -858,8 +858,8 @@ github.com/opencontainers/runc v1.1.0 h1:O9+X96OcDjkmmZyfaG996kV7yq8HsoU2h1XRRQc
 github.com/opencontainers/runc v1.1.0/go.mod h1:Tj1hFw6eFWp/o33uxGf5yF2BX5yz2Z6iptFpuvbbKqc=
 github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417/go.mod h1:jwyrGlmzljRJv/Fgzds9SsS/C5hL+LL3ko9hs6T5lQ0=
 github.com/opencontainers/selinux v1.10.0/go.mod h1:2i0OySw99QjzBBQByd1Gr9gSjvuho1lHsJxIJ3gGbJI=
-github.com/openinfradev/tks-common v0.0.0-20220406045249-8ce7aeb0cb72 h1:DzL7q4G4UA/z+oxPnsCuHFTcnJIdLP6LIkzUn4bZvJc=
-github.com/openinfradev/tks-common v0.0.0-20220406045249-8ce7aeb0cb72/go.mod h1:3Mb3KGoozH5vT7zdIQb3CXYjqpIhUbgK/qhVJu3VMRY=
+github.com/openinfradev/tks-common v0.0.0-20220719011208-3173307dcfa4 h1:InDQIs/LXRm2w8FQ8S9Q6lJCoKWVDX0bxTtwmIqfkxQ=
+github.com/openinfradev/tks-common v0.0.0-20220719011208-3173307dcfa4/go.mod h1:3Mb3KGoozH5vT7zdIQb3CXYjqpIhUbgK/qhVJu3VMRY=
 github.com/openinfradev/tks-proto v0.0.6-0.20220406043255-9fffe49c4625 h1:kvcIa/cU+sjsK4VhQHjtquS3mGC3UAmbNHL9Qe03vYA=
 github.com/openinfradev/tks-proto v0.0.6-0.20220406043255-9fffe49c4625/go.mod h1:3DrATRNCUJMW0oMLHT6D1teN4hX0vMGH4qOGnadakmo=
 github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492/go.mod h1:Ngi6UdF0k5OKD5t5wlmGhe/EDKPoUM3BXZSSfIuJbis=

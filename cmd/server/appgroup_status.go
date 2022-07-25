@@ -24,7 +24,7 @@ func processAppGroupStatus(ctx context.Context) error {
 	for i := range appGroups {
 		appGroup := appGroups[i]
 
-		appGroupId := appGroup.ID.String()
+		appGroupId := appGroup.ID
 		workflowId := appGroup.WorkflowId
 		status := appGroup.Status
 		statusDesc := appGroup.StatusDesc

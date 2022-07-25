@@ -23,7 +23,7 @@ func processClusterStatus(ctx context.Context) error {
 	for i := range clusters {
 		cluster := clusters[i]
 
-		clusterId := cluster.ID.String()
+		clusterId := cluster.ID
 		workflowId := cluster.WorkflowId
 		status := cluster.Status
 		statusDesc := cluster.StatusDesc

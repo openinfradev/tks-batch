@@ -5,17 +5,17 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 
 	wfv1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	mockargo "github.com/openinfradev/tks-common/pkg/argowf/mock"
+	"github.com/openinfradev/tks-common/pkg/helper"
 	pb "github.com/openinfradev/tks-proto/tks_pb"
 
 	"github.com/openinfradev/tks-batch/internal/application"
 )
 
-func insertTestAppGroup(appGroupId uuid.UUID, workflowId string, status pb.AppGroupStatus, statusDesc string) {
+func insertTestAppGroup(appGroupId string, workflowId string, status pb.AppGroupStatus, statusDesc string) {
 	appgroup := application.ApplicationGroup{
 		ID:         appGroupId,
 		WorkflowId: workflowId,
@@ -25,16 +25,16 @@ func insertTestAppGroup(appGroupId uuid.UUID, workflowId string, status pb.AppGr
 	applicationAccessor.GetDb().Create(&appgroup)
 }
 
-func getTestAppGroup(appGroupId uuid.UUID) application.ApplicationGroup {
+func getTestAppGroup(appGroupId string) application.ApplicationGroup {
 	var res application.ApplicationGroup
-	applicationAccessor.GetDb().First(&res, appGroupId)
-	applicationAccessor.GetDb().Delete(&application.ApplicationGroup{}, appGroupId)
+	applicationAccessor.GetDb().First(&res, "ID = ?", appGroupId)
+	applicationAccessor.GetDb().Delete(&application.ApplicationGroup{}, "ID = ?", appGroupId)
 
 	return res
 }
 
 func TestWorkferAppGroupStatus(t *testing.T) {
-	appGroupId := uuid.New()
+	appGroupId := helper.GenerateApplicaionGroupId()
 
 	testCases := []struct {
 		name        string

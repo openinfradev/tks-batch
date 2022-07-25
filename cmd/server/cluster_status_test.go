@@ -5,17 +5,17 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 
 	wfv1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	mockargo "github.com/openinfradev/tks-common/pkg/argowf/mock"
+	"github.com/openinfradev/tks-common/pkg/helper"
 	pb "github.com/openinfradev/tks-proto/tks_pb"
 
 	"github.com/openinfradev/tks-batch/internal/cluster"
 )
 
-func insertTestCluster(clusterId uuid.UUID, workflowId string, status pb.ClusterStatus, statusDesc string) {
+func insertTestCluster(clusterId string, workflowId string, status pb.ClusterStatus, statusDesc string) {
 	cluster := cluster.Cluster{
 		ID:         clusterId,
 		WorkflowId: workflowId,
@@ -25,16 +25,16 @@ func insertTestCluster(clusterId uuid.UUID, workflowId string, status pb.Cluster
 	clusterAccessor.GetDb().Create(&cluster)
 }
 
-func getTestCluster(clusterId uuid.UUID) cluster.Cluster {
+func getTestCluster(clusterId string) cluster.Cluster {
 	var res cluster.Cluster
-	clusterAccessor.GetDb().First(&res, clusterId)
-	clusterAccessor.GetDb().Delete(&cluster.Cluster{}, clusterId)
+	clusterAccessor.GetDb().First(&res, "ID = ?", clusterId)
+	clusterAccessor.GetDb().Delete(&cluster.Cluster{}, "ID = ?", clusterId)
 
 	return res
 }
 
 func TestWorkferClusterStatus(t *testing.T) {
-	clusterId := uuid.New()
+	clusterId := helper.GenerateClusterId()
 
 	testCases := []struct {
 		name        string
