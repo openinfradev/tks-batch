@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	wfv1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
+	"github.com/openinfradev/tks-common/pkg/argowf"
 	mockargo "github.com/openinfradev/tks-common/pkg/argowf/mock"
 	"github.com/openinfradev/tks-common/pkg/helper"
 	pb "github.com/openinfradev/tks-proto/tks_pb"
@@ -48,8 +48,8 @@ func TestWorkferAppGroupStatus(t *testing.T) {
 				insertTestAppGroup(appGroupId, "WORKFLOWID", pb.AppGroupStatus_APP_GROUP_INSTALLING, "installing")
 			},
 			buildStubs: func(mockArgoClient *mockargo.MockClient) {
-				mockArgoClient.EXPECT().GetWorkflow(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(wfv1.WorkflowSucceeded, "msg_seccueded", nil)
+				mockArgoClient.EXPECT().GetWorkflow(gomock.Any(), gomock.Any()).
+					Return(&argowf.Workflow{Status: argowf.WorkflowStatus{Phase: "Succeeded", Progress: "0/1", Message: "message"}}, nil)
 			},
 			checkResult: func(err error) {
 				require.NoError(t, err)
@@ -57,7 +57,7 @@ func TestWorkferAppGroupStatus(t *testing.T) {
 				appGroup := getTestAppGroup(appGroupId)
 				require.Equal(t, appGroup.WorkflowId, "WORKFLOWID")
 				require.Equal(t, appGroup.Status, pb.AppGroupStatus_APP_GROUP_RUNNING)
-				require.Equal(t, appGroup.StatusDesc, "msg_seccueded")
+				require.Equal(t, appGroup.StatusDesc, "(0/1) message")
 			},
 		},
 		{
@@ -66,8 +66,8 @@ func TestWorkferAppGroupStatus(t *testing.T) {
 				insertTestAppGroup(appGroupId, "WORKFLOWID", pb.AppGroupStatus_APP_GROUP_INSTALLING, "installing")
 			},
 			buildStubs: func(mockArgoClient *mockargo.MockClient) {
-				mockArgoClient.EXPECT().GetWorkflow(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(wfv1.WorkflowRunning, "msg_running", nil)
+				mockArgoClient.EXPECT().GetWorkflow(gomock.Any(), gomock.Any()).
+					Return(&argowf.Workflow{Status: argowf.WorkflowStatus{Phase: "Running", Progress: "0/1", Message: "message"}}, nil)
 			},
 			checkResult: func(err error) {
 				require.NoError(t, err)
@@ -75,7 +75,7 @@ func TestWorkferAppGroupStatus(t *testing.T) {
 				appGroup := getTestAppGroup(appGroupId)
 				require.Equal(t, appGroup.WorkflowId, "WORKFLOWID")
 				require.Equal(t, appGroup.Status, pb.AppGroupStatus_APP_GROUP_INSTALLING)
-				require.Equal(t, appGroup.StatusDesc, "msg_running")
+				require.Equal(t, appGroup.StatusDesc, "(0/1) message")
 			},
 		},
 		{
@@ -84,8 +84,8 @@ func TestWorkferAppGroupStatus(t *testing.T) {
 				insertTestAppGroup(appGroupId, "WORKFLOWID", pb.AppGroupStatus_APP_GROUP_DELETING, "deleting")
 			},
 			buildStubs: func(mockArgoClient *mockargo.MockClient) {
-				mockArgoClient.EXPECT().GetWorkflow(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(wfv1.WorkflowSucceeded, "msg_seccueded", nil)
+				mockArgoClient.EXPECT().GetWorkflow(gomock.Any(), gomock.Any()).
+					Return(&argowf.Workflow{Status: argowf.WorkflowStatus{Phase: "Succeeded", Progress: "0/1", Message: "message"}}, nil)
 			},
 			checkResult: func(err error) {
 				require.NoError(t, err)
@@ -93,7 +93,7 @@ func TestWorkferAppGroupStatus(t *testing.T) {
 				appGroup := getTestAppGroup(appGroupId)
 				require.Equal(t, appGroup.WorkflowId, "WORKFLOWID")
 				require.Equal(t, appGroup.Status, pb.AppGroupStatus_APP_GROUP_DELETED)
-				require.Equal(t, appGroup.StatusDesc, "msg_seccueded")
+				require.Equal(t, appGroup.StatusDesc, "(0/1) message")
 			},
 		},
 		{
@@ -102,8 +102,8 @@ func TestWorkferAppGroupStatus(t *testing.T) {
 				insertTestAppGroup(appGroupId, "WORKFLOWID", pb.AppGroupStatus_APP_GROUP_DELETING, "deleting")
 			},
 			buildStubs: func(mockArgoClient *mockargo.MockClient) {
-				mockArgoClient.EXPECT().GetWorkflow(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(wfv1.WorkflowRunning, "msg_running", nil)
+				mockArgoClient.EXPECT().GetWorkflow(gomock.Any(), gomock.Any()).
+					Return(&argowf.Workflow{Status: argowf.WorkflowStatus{Phase: "Running", Progress: "0/1", Message: "message"}}, nil)
 			},
 			checkResult: func(err error) {
 				require.NoError(t, err)
@@ -111,7 +111,7 @@ func TestWorkferAppGroupStatus(t *testing.T) {
 				appGroup := getTestAppGroup(appGroupId)
 				require.Equal(t, appGroup.WorkflowId, "WORKFLOWID")
 				require.Equal(t, appGroup.Status, pb.AppGroupStatus_APP_GROUP_DELETING)
-				require.Equal(t, appGroup.StatusDesc, "msg_running")
+				require.Equal(t, appGroup.StatusDesc, "(0/1) message")
 			},
 		},
 		{

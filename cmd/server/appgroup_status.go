@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	wfv1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"github.com/openinfradev/tks-common/pkg/log"
 	pb "github.com/openinfradev/tks-proto/tks_pb"
 )
@@ -32,37 +31,35 @@ func processAppGroupStatus(ctx context.Context) error {
 		// update appgroup status
 		var newStatus pb.AppGroupStatus
 		var newMessage string
-		var err error
 
 		if workflowId != "" {
-			var phase wfv1.WorkflowPhase
-			phase, newMessage, err = argowfClient.GetWorkflow(ctx, workflowId, "argo")
+			workflow, err := argowfClient.GetWorkflow("argo", workflowId)
 			if err != nil {
 				log.Error("failed to get argo workflow. err : ", err)
 				continue
 			}
-			log.Debug(fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, phase))
-
+			newMessage = fmt.Sprintf("(%s) %s", workflow.Status.Progress, workflow.Status.Message)
+			log.Debug(fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
 			if status == pb.AppGroupStatus_APP_GROUP_INSTALLING {
-				switch phase {
-				case wfv1.WorkflowRunning:
+				switch workflow.Status.Phase {
+				case "Running":
 					newStatus = pb.AppGroupStatus_APP_GROUP_INSTALLING
-				case wfv1.WorkflowSucceeded:
+				case "Succeeded":
 					newStatus = pb.AppGroupStatus_APP_GROUP_RUNNING
-				case wfv1.WorkflowFailed:
+				case "Failed":
 					newStatus = pb.AppGroupStatus_APP_GROUP_ERROR
-				case wfv1.WorkflowError:
+				case "Error":
 					newStatus = pb.AppGroupStatus_APP_GROUP_ERROR
 				}
 			} else if status == pb.AppGroupStatus_APP_GROUP_DELETING {
-				switch phase {
-				case wfv1.WorkflowRunning:
+				switch workflow.Status.Phase {
+				case "Running":
 					newStatus = pb.AppGroupStatus_APP_GROUP_DELETING
-				case wfv1.WorkflowSucceeded:
+				case "Succeeded":
 					newStatus = pb.AppGroupStatus_APP_GROUP_DELETED
-				case wfv1.WorkflowFailed:
+				case "Failed":
 					newStatus = pb.AppGroupStatus_APP_GROUP_ERROR
-				case wfv1.WorkflowError:
+				case "Error":
 					newStatus = pb.AppGroupStatus_APP_GROUP_ERROR
 				}
 			}
