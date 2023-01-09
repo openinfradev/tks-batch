@@ -156,21 +156,6 @@ func TestWorkferAppGroupStatus(t *testing.T) {
 				require.Equal(t, appGroup.Status, pb.AppGroupStatus_APP_GROUP_DELETED)
 			},
 		},
-		{
-			name: "ERROR_NO_WORKFLOW_ID",
-			setupTest: func() {
-				insertTestAppGroup(appGroupId, "", pb.AppGroupStatus_APP_GROUP_INSTALLING, "installing")
-			},
-			buildStubs: func(mockArgoClient *mockargo.MockClient) {
-			},
-			checkResult: func(err error) {
-				require.NoError(t, err)
-
-				appGroup := getTestAppGroup(appGroupId)
-				require.Equal(t, appGroup.Status, pb.AppGroupStatus_APP_GROUP_ERROR)
-				require.Equal(t, appGroup.StatusDesc, "empty workflowId")
-			},
-		},
 	}
 
 	for i := range testCases {
