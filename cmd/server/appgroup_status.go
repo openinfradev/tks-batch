@@ -67,8 +67,8 @@ func processAppGroupStatus(ctx context.Context) error {
 				continue
 			}
 		} else {
-			newStatus = pb.AppGroupStatus_APP_GROUP_ERROR
-			newMessage = "empty workflowId"
+			// [TODO] READY 상태를 추가하도록 할 것
+			continue
 		}
 
 		if status != newStatus || statusDesc != newMessage {

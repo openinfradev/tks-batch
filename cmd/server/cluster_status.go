@@ -37,6 +37,7 @@ func processClusterStatus(ctx context.Context) error {
 				log.Error("failed to get argo workflow. err : ", err)
 				continue
 			}
+
 			newMessage = fmt.Sprintf("(%s) %s", workflow.Status.Progress, workflow.Status.Message)
 			log.Debug(fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
 
@@ -67,8 +68,8 @@ func processClusterStatus(ctx context.Context) error {
 				continue
 			}
 		} else {
-			newStatus = pb.ClusterStatus_ERROR
-			newMessage = "empty workflowId"
+			// [TODO] READY 상태를 추가하도록 할 것
+			continue
 		}
 
 		if status != newStatus || statusDesc != newMessage {

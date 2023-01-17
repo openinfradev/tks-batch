@@ -156,21 +156,6 @@ func TestWorkferClusterStatus(t *testing.T) {
 				require.Equal(t, cluster.Status, pb.ClusterStatus_DELETED)
 			},
 		},
-		{
-			name: "ERROR_NO_WORKFLOW_ID",
-			setupTest: func() {
-				insertTestCluster(clusterId, "", pb.ClusterStatus_INSTALLING, "installing")
-			},
-			buildStubs: func(mockArgoClient *mockargo.MockClient) {
-			},
-			checkResult: func(err error) {
-				require.NoError(t, err)
-
-				cluster := getTestCluster(clusterId)
-				require.Equal(t, cluster.Status, pb.ClusterStatus_ERROR)
-				require.Equal(t, cluster.StatusDesc, "empty workflowId")
-			},
-		},
 	}
 
 	for i := range testCases {
