@@ -7,14 +7,13 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/openinfradev/tks-common/pkg/log"
-	pb "github.com/openinfradev/tks-proto/tks_pb"
 )
 
 // Cluster represents a kubernetes cluster information.
 type Cluster struct {
 	ID         string `gorm:"primarykey"`
 	WorkflowId string
-	Status     pb.ClusterStatus
+	Status     string
 	StatusDesc string
 	UpdatedAt  time.Time
 	CreatedAt  time.Time
@@ -41,7 +40,7 @@ func (x *ClusterAccessor) GetIncompleteClusters() ([]Cluster, error) {
 	var clusters []Cluster
 
 	res := x.db.
-		Where("status IN ?", []pb.ClusterStatus{pb.ClusterStatus_INSTALLING, pb.ClusterStatus_DELETING}).
+		Where("status IN ?", []string{"INSTALLING", "DELETING"}).
 		Find(&clusters)
 
 	if res.Error != nil {
@@ -51,7 +50,7 @@ func (x *ClusterAccessor) GetIncompleteClusters() ([]Cluster, error) {
 	return clusters, nil
 }
 
-func (x *ClusterAccessor) UpdateClusterStatus(clusterId string, status pb.ClusterStatus, statusDesc string, workflowId string) error {
+func (x *ClusterAccessor) UpdateClusterStatus(clusterId string, status string, statusDesc string, workflowId string) error {
 	log.Info(fmt.Sprintf("UpdateClusterStatus. clusterId[%s], status[%s], statusDesc[%s], workflowId[%s]", clusterId, status, statusDesc, workflowId))
 	res := x.db.Model(Cluster{}).
 		Where("ID = ?", clusterId).

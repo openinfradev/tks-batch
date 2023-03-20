@@ -1,14 +1,13 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/openinfradev/tks-common/pkg/log"
 	pb "github.com/openinfradev/tks-proto/tks_pb"
 )
 
-func processAppGroupStatus(ctx context.Context) error {
+func processAppGroupStatus() error {
 
 	// get appgroups
 	appGroups, err := applicationAccessor.GetIncompleteAppGroups()

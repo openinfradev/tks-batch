@@ -1,14 +1,12 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/openinfradev/tks-common/pkg/log"
-	pb "github.com/openinfradev/tks-proto/tks_pb"
 )
 
-func processClusterStatus(ctx context.Context) error {
+func processClusterStatus() error {
 	// get clusters
 	clusters, err := clusterAccessor.GetIncompleteClusters()
 	if err != nil {
@@ -41,30 +39,30 @@ func processClusterStatus(ctx context.Context) error {
 			newMessage = fmt.Sprintf("(%s) %s", workflow.Status.Progress, workflow.Status.Message)
 			log.Debug(fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
 
-			if status == pb.ClusterStatus_INSTALLING {
+			if status == "INSTALLING" {
 				switch workflow.Status.Phase {
 				case "Running":
-					newStatus = pb.ClusterStatus_INSTALLING
+					newStatus = "INSTALLING"
 				case "Succeeded":
-					newStatus = pb.ClusterStatus_RUNNING
+					newStatus = "RUNNING"
 				case "Failed":
-					newStatus = pb.ClusterStatus_ERROR
+					newStatus = "ERROR"
 				case "Error":
-					newStatus = pb.ClusterStatus_ERROR
+					newStatus = "ERROR"
 				}
-			} else if status == pb.ClusterStatus_DELETING {
+			} else if status == "DELETING" {
 				switch workflow.Status.Phase {
 				case "Running":
-					newStatus = pb.ClusterStatus_DELETING
+					newStatus = "DELETING"
 				case "Succeeded":
-					newStatus = pb.ClusterStatus_DELETED
+					newStatus = "DELETED"
 				case "Failed":
-					newStatus = pb.ClusterStatus_ERROR
+					newStatus = "ERROR"
 				case "Error":
-					newStatus = pb.ClusterStatus_ERROR
+					newStatus = "ERROR"
 				}
 			}
-			if newStatus == pb.ClusterStatus_UNSPECIFIED {
+			if newStatus == "UNSPECIFIED" {
 				continue
 			}
 		} else {

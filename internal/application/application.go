@@ -7,12 +7,11 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/openinfradev/tks-common/pkg/log"
-	pb "github.com/openinfradev/tks-proto/tks_pb"
 )
 
 type ApplicationGroup struct {
 	ID         string `gorm:"primarykey"`
-	Status     pb.AppGroupStatus
+	Status     string
 	StatusDesc string
 	WorkflowId string
 	UpdatedAt  time.Time
@@ -39,7 +38,7 @@ func (x *ApplicationAccessor) GetIncompleteAppGroups() ([]ApplicationGroup, erro
 	var appGroups []ApplicationGroup
 
 	res := x.db.
-		Where("status IN ?", []pb.AppGroupStatus{pb.AppGroupStatus_APP_GROUP_INSTALLING, pb.AppGroupStatus_APP_GROUP_DELETING}).
+		Where("status IN ?", []string{"INSTALLING", "DELETING"}).
 		Find(&appGroups)
 
 	if res.Error != nil {
@@ -49,7 +48,7 @@ func (x *ApplicationAccessor) GetIncompleteAppGroups() ([]ApplicationGroup, erro
 	return appGroups, nil
 }
 
-func (x *ApplicationAccessor) UpdateAppGroupStatus(appGroupId string, status pb.AppGroupStatus, statusDesc string, workflowId string) error {
+func (x *ApplicationAccessor) UpdateAppGroupStatus(appGroupId string, status string, statusDesc string, workflowId string) error {
 	log.Info(fmt.Sprintf("UpdateAppGroupStatus. appGroupId[%s], status[%s], statusDesc[%s], workflowId[%s]", appGroupId, status, statusDesc, workflowId))
 	res := x.db.Model(ApplicationGroup{}).
 		Where("ID = ?", appGroupId).
