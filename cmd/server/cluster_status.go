@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/openinfradev/tks-common/pkg/log"
+	"github.com/openinfradev/tks-api/pkg/domain"
+	"github.com/openinfradev/tks-api/pkg/log"
 )
 
 func processClusterStatus() error {
@@ -26,7 +27,7 @@ func processClusterStatus() error {
 		statusDesc := cluster.StatusDesc
 
 		// update status
-		var newStatus pb.ClusterStatus
+		var newStatus domain.ClusterStatus
 		var newMessage string
 
 		if workflowId != "" {
@@ -39,34 +40,33 @@ func processClusterStatus() error {
 			newMessage = fmt.Sprintf("(%s) %s", workflow.Status.Progress, workflow.Status.Message)
 			log.Debug(fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
 
-			if status == "INSTALLING" {
+			if status == domain.ClusterStatus_INSTALLING {
 				switch workflow.Status.Phase {
 				case "Running":
-					newStatus = "INSTALLING"
+					newStatus = domain.ClusterStatus_INSTALLING
 				case "Succeeded":
-					newStatus = "RUNNING"
+					newStatus = domain.ClusterStatus_RUNNING
 				case "Failed":
-					newStatus = "ERROR"
+					newStatus = domain.ClusterStatus_ERROR
 				case "Error":
-					newStatus = "ERROR"
+					newStatus = domain.ClusterStatus_ERROR
 				}
-			} else if status == "DELETING" {
+			} else if status == domain.ClusterStatus_DELETING {
 				switch workflow.Status.Phase {
 				case "Running":
-					newStatus = "DELETING"
+					newStatus = domain.ClusterStatus_DELETING
 				case "Succeeded":
-					newStatus = "DELETED"
+					newStatus = domain.ClusterStatus_DELETED
 				case "Failed":
-					newStatus = "ERROR"
+					newStatus = domain.ClusterStatus_ERROR
 				case "Error":
-					newStatus = "ERROR"
+					newStatus = domain.ClusterStatus_ERROR
 				}
 			}
-			if newStatus == "UNSPECIFIED" {
+			if newStatus == domain.ClusterStatus_PENDING {
 				continue
 			}
 		} else {
-			// [TODO] READY 상태를 추가하도록 할 것
 			continue
 		}
 

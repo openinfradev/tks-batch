@@ -2,20 +2,18 @@ package application
 
 import (
 	"fmt"
-	"time"
 
 	"gorm.io/gorm"
 
-	"github.com/openinfradev/tks-common/pkg/log"
+	"github.com/openinfradev/tks-api/pkg/domain"
+	"github.com/openinfradev/tks-api/pkg/log"
 )
 
-type ApplicationGroup struct {
+type AppGroup struct {
 	ID         string `gorm:"primarykey"`
-	Status     string
-	StatusDesc string
 	WorkflowId string
-	UpdatedAt  time.Time
-	CreatedAt  time.Time
+	Status     domain.AppGroupStatus
+	StatusDesc string
 }
 
 type ApplicationAccessor struct {
@@ -34,11 +32,11 @@ func (x *ApplicationAccessor) GetDb() *gorm.DB {
 	return x.db
 }
 
-func (x *ApplicationAccessor) GetIncompleteAppGroups() ([]ApplicationGroup, error) {
-	var appGroups []ApplicationGroup
+func (x *ApplicationAccessor) GetIncompleteAppGroups() ([]AppGroup, error) {
+	var appGroups []AppGroup
 
 	res := x.db.
-		Where("status IN ?", []string{"INSTALLING", "DELETING"}).
+		Where("status IN ?", []domain.AppGroupStatus{domain.AppGroupStatus_INSTALLING, domain.AppGroupStatus_DELETING}).
 		Find(&appGroups)
 
 	if res.Error != nil {
@@ -48,9 +46,9 @@ func (x *ApplicationAccessor) GetIncompleteAppGroups() ([]ApplicationGroup, erro
 	return appGroups, nil
 }
 
-func (x *ApplicationAccessor) UpdateAppGroupStatus(appGroupId string, status string, statusDesc string, workflowId string) error {
-	log.Info(fmt.Sprintf("UpdateAppGroupStatus. appGroupId[%s], status[%s], statusDesc[%s], workflowId[%s]", appGroupId, status, statusDesc, workflowId))
-	res := x.db.Model(ApplicationGroup{}).
+func (x *ApplicationAccessor) UpdateAppGroupStatus(appGroupId string, status domain.AppGroupStatus, statusDesc string, workflowId string) error {
+	log.Info(fmt.Sprintf("UpdateAppGroupStatus. appGroupId[%s], status[%d], statusDesc[%s], workflowId[%s]", appGroupId, status, statusDesc, workflowId))
+	res := x.db.Model(AppGroup{}).
 		Where("ID = ?", appGroupId).
 		Updates(map[string]interface{}{"Status": status, "StatusDesc": statusDesc, "WorkflowId": workflowId})
 

@@ -2,21 +2,19 @@ package cluster
 
 import (
 	"fmt"
-	"time"
 
 	"gorm.io/gorm"
 
-	"github.com/openinfradev/tks-common/pkg/log"
+	"github.com/openinfradev/tks-api/pkg/domain"
+	"github.com/openinfradev/tks-api/pkg/log"
 )
 
 // Cluster represents a kubernetes cluster information.
 type Cluster struct {
 	ID         string `gorm:"primarykey"`
 	WorkflowId string
-	Status     string
+	Status     domain.ClusterStatus
 	StatusDesc string
-	UpdatedAt  time.Time
-	CreatedAt  time.Time
 }
 
 // Accessor accesses cluster info in DB.
@@ -40,7 +38,7 @@ func (x *ClusterAccessor) GetIncompleteClusters() ([]Cluster, error) {
 	var clusters []Cluster
 
 	res := x.db.
-		Where("status IN ?", []string{"INSTALLING", "DELETING"}).
+		Where("status IN ?", []domain.ClusterStatus{domain.ClusterStatus_INSTALLING, domain.ClusterStatus_DELETING}).
 		Find(&clusters)
 
 	if res.Error != nil {
@@ -50,8 +48,8 @@ func (x *ClusterAccessor) GetIncompleteClusters() ([]Cluster, error) {
 	return clusters, nil
 }
 
-func (x *ClusterAccessor) UpdateClusterStatus(clusterId string, status string, statusDesc string, workflowId string) error {
-	log.Info(fmt.Sprintf("UpdateClusterStatus. clusterId[%s], status[%s], statusDesc[%s], workflowId[%s]", clusterId, status, statusDesc, workflowId))
+func (x *ClusterAccessor) UpdateClusterStatus(clusterId string, status domain.ClusterStatus, statusDesc string, workflowId string) error {
+	log.Info(fmt.Sprintf("UpdateClusterStatus. clusterId[%s], status[%d], statusDesc[%s], workflowId[%s]", clusterId, status, statusDesc, workflowId))
 	res := x.db.Model(Cluster{}).
 		Where("ID = ?", clusterId).
 		Updates(map[string]interface{}{"Status": status, "StatusDesc": statusDesc, "WorkflowId": workflowId})
