@@ -11,8 +11,6 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-var gormDB *gorm.DB
-
 func InitDB() (*gorm.DB, error) {
 	// Connect to gormDB
 	dsn := fmt.Sprintf(
