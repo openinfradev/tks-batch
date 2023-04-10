@@ -1,13 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/openinfradev/tks-api/pkg/domain"
-	"github.com/openinfradev/tks-api/pkg/log"
+	"github.com/openinfradev/tks-common/pkg/log"
+	pb "github.com/openinfradev/tks-proto/tks_pb"
 )
 
-func processClusterStatus() error {
+func processClusterStatus(ctx context.Context) error {
 	// get clusters
 	clusters, err := clusterAccessor.GetIncompleteClusters()
 	if err != nil {
@@ -27,7 +28,7 @@ func processClusterStatus() error {
 		statusDesc := cluster.StatusDesc
 
 		// update status
-		var newStatus domain.ClusterStatus
+		var newStatus pb.ClusterStatus
 		var newMessage string
 
 		if workflowId != "" {
@@ -40,33 +41,34 @@ func processClusterStatus() error {
 			newMessage = fmt.Sprintf("(%s) %s", workflow.Status.Progress, workflow.Status.Message)
 			log.Debug(fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
 
-			if status == domain.ClusterStatus_INSTALLING {
+			if status == pb.ClusterStatus_INSTALLING {
 				switch workflow.Status.Phase {
 				case "Running":
-					newStatus = domain.ClusterStatus_INSTALLING
+					newStatus = pb.ClusterStatus_INSTALLING
 				case "Succeeded":
-					newStatus = domain.ClusterStatus_RUNNING
+					newStatus = pb.ClusterStatus_RUNNING
 				case "Failed":
-					newStatus = domain.ClusterStatus_ERROR
+					newStatus = pb.ClusterStatus_ERROR
 				case "Error":
-					newStatus = domain.ClusterStatus_ERROR
+					newStatus = pb.ClusterStatus_ERROR
 				}
-			} else if status == domain.ClusterStatus_DELETING {
+			} else if status == pb.ClusterStatus_DELETING {
 				switch workflow.Status.Phase {
 				case "Running":
-					newStatus = domain.ClusterStatus_DELETING
+					newStatus = pb.ClusterStatus_DELETING
 				case "Succeeded":
-					newStatus = domain.ClusterStatus_DELETED
+					newStatus = pb.ClusterStatus_DELETED
 				case "Failed":
-					newStatus = domain.ClusterStatus_ERROR
+					newStatus = pb.ClusterStatus_ERROR
 				case "Error":
-					newStatus = domain.ClusterStatus_ERROR
+					newStatus = pb.ClusterStatus_ERROR
 				}
 			}
-			if newStatus == domain.ClusterStatus_PENDING {
+			if newStatus == pb.ClusterStatus_UNSPECIFIED {
 				continue
 			}
 		} else {
+			// [TODO] READY 상태를 추가하도록 할 것
 			continue
 		}
 

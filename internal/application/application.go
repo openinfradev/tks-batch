@@ -2,18 +2,21 @@ package application
 
 import (
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 
-	"github.com/openinfradev/tks-api/pkg/domain"
-	"github.com/openinfradev/tks-api/pkg/log"
+	"github.com/openinfradev/tks-common/pkg/log"
+	pb "github.com/openinfradev/tks-proto/tks_pb"
 )
 
-type AppGroup struct {
+type ApplicationGroup struct {
 	ID         string `gorm:"primarykey"`
-	WorkflowId string
-	Status     domain.AppGroupStatus
+	Status     pb.AppGroupStatus
 	StatusDesc string
+	WorkflowId string
+	UpdatedAt  time.Time
+	CreatedAt  time.Time
 }
 
 type ApplicationAccessor struct {
@@ -32,11 +35,11 @@ func (x *ApplicationAccessor) GetDb() *gorm.DB {
 	return x.db
 }
 
-func (x *ApplicationAccessor) GetIncompleteAppGroups() ([]AppGroup, error) {
-	var appGroups []AppGroup
+func (x *ApplicationAccessor) GetIncompleteAppGroups() ([]ApplicationGroup, error) {
+	var appGroups []ApplicationGroup
 
 	res := x.db.
-		Where("status IN ?", []domain.AppGroupStatus{domain.AppGroupStatus_INSTALLING, domain.AppGroupStatus_DELETING}).
+		Where("status IN ?", []pb.AppGroupStatus{pb.AppGroupStatus_APP_GROUP_INSTALLING, pb.AppGroupStatus_APP_GROUP_DELETING}).
 		Find(&appGroups)
 
 	if res.Error != nil {
@@ -46,9 +49,9 @@ func (x *ApplicationAccessor) GetIncompleteAppGroups() ([]AppGroup, error) {
 	return appGroups, nil
 }
 
-func (x *ApplicationAccessor) UpdateAppGroupStatus(appGroupId string, status domain.AppGroupStatus, statusDesc string, workflowId string) error {
-	log.Info(fmt.Sprintf("UpdateAppGroupStatus. appGroupId[%s], status[%d], statusDesc[%s], workflowId[%s]", appGroupId, status, statusDesc, workflowId))
-	res := x.db.Model(AppGroup{}).
+func (x *ApplicationAccessor) UpdateAppGroupStatus(appGroupId string, status pb.AppGroupStatus, statusDesc string, workflowId string) error {
+	log.Info(fmt.Sprintf("UpdateAppGroupStatus. appGroupId[%s], status[%s], statusDesc[%s], workflowId[%s]", appGroupId, status, statusDesc, workflowId))
+	res := x.db.Model(ApplicationGroup{}).
 		Where("ID = ?", appGroupId).
 		Updates(map[string]interface{}{"Status": status, "StatusDesc": statusDesc, "WorkflowId": workflowId})
 
