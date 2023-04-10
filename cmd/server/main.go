@@ -1,74 +1,87 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"time"
 
-	argo "github.com/openinfradev/tks-api/pkg/argo-client"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
+	"github.com/openinfradev/tks-common/pkg/argowf"
 	"github.com/openinfradev/tks-common/pkg/log"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 
 	"github.com/openinfradev/tks-batch/internal/application"
 	"github.com/openinfradev/tks-batch/internal/cluster"
-	"github.com/openinfradev/tks-batch/internal/database"
 )
 
 const INTERVAL_SEC = 1
 
 var (
-	argowfClient        argo.ArgoClient
+	argowfClient        argowf.Client
 	clusterAccessor     *cluster.ClusterAccessor
 	applicationAccessor *application.ApplicationAccessor
 )
 
+var (
+	port        int
+	argoAddress string
+	argoPort    int
+
+	dbhost     string
+	dbport     string
+	dbuser     string
+	dbpassword string
+)
+
 func init() {
-	flag.Int("port", 9112, "service port")
-	flag.String("argo-address", "localhost", "server address for argo-workflow-server")
-	flag.Int("argo-port", 2746, "server port for argo-workflow-server")
+	flag.IntVar(&port, "port", 9112, "service port")
+	flag.StringVar(&argoAddress, "argo-address", "localhost", "server address for argo-workflow-server")
+	flag.IntVar(&argoPort, "argo-port", 2746, "server port for argo-workflow-server")
 
-	flag.String("dbhost", "localhost", "host of postgreSQL")
-	flag.String("dbport", "5432", "port of postgreSQL")
-	flag.String("dbuser", "postgres", "postgreSQL user")
-	flag.String("dbpassword", "password", "password for postgreSQL user")
-	flag.String("dbname", "tks", "the name of database")
-
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	flag.Parse()
-	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
-		log.Error("Failed to bindFlags ", err)
-	}
-
+	flag.StringVar(&dbhost, "dbhost", "localhost", "host of postgreSQL")
+	flag.StringVar(&dbport, "dbport", "5432", "port of postgreSQL")
+	flag.StringVar(&dbuser, "dbuser", "postgres", "postgreSQL user")
+	flag.StringVar(&dbpassword, "dbpassword", "password", "password for postgreSQL user")
 }
 
 func main() {
+	flag.Parse()
+
 	log.Info("*** Arguments *** ")
-	for i, s := range viper.AllSettings() {
-		log.Info(fmt.Sprintf("%s : %v", i, s))
-	}
+	log.Info("argoAddress : ", argoAddress)
+	log.Info("argoPort : ", argoPort)
+	log.Info("dbhost : ", dbhost)
+	log.Info("dbport : ", dbport)
+	log.Info("dbuser : ", dbuser)
+	log.Info("dbpassword : ", dbpassword)
 	log.Info("****************** ")
 
-	// Initialize database
-	db, err := database.InitDB()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// initialize database
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=tks port=%s sslmode=disable TimeZone=Asia/Seoul", dbhost, dbuser, dbpassword, dbport)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("cannot connect gormDB")
+		log.Fatal("failed to open database ", err)
 	}
 	clusterAccessor = cluster.New(db)
 	applicationAccessor = application.New(db)
 
 	// initialize external clients
-	argowfClient, err = argo.New(viper.GetString("argo-address"), viper.GetInt("argo-port"), false, "")
+	argowfClient, err = argowf.New(argoAddress, argoPort, false, "")
 	if err != nil {
 		log.Fatal("failed to create argowf client : ", err)
 	}
 
 	for {
-		err = processClusterStatus()
+		err = processClusterStatus(ctx)
 		if err != nil {
 			log.Error(err)
 		}
-		err = processAppGroupStatus()
+		err = processAppGroupStatus(ctx)
 		if err != nil {
 			log.Error(err)
 		}
