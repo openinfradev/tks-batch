@@ -1,14 +1,13 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
-	"github.com/openinfradev/tks-common/pkg/log"
-	pb "github.com/openinfradev/tks-proto/tks_pb"
+	"github.com/openinfradev/tks-api/pkg/domain"
+	"github.com/openinfradev/tks-api/pkg/log"
 )
 
-func processAppGroupStatus(ctx context.Context) error {
+func processAppGroupStatus() error {
 
 	// get appgroups
 	appGroups, err := applicationAccessor.GetIncompleteAppGroups()
@@ -29,7 +28,7 @@ func processAppGroupStatus(ctx context.Context) error {
 		statusDesc := appGroup.StatusDesc
 
 		// update appgroup status
-		var newStatus pb.AppGroupStatus
+		var newStatus domain.AppGroupStatus
 		var newMessage string
 
 		if workflowId != "" {
@@ -40,34 +39,33 @@ func processAppGroupStatus(ctx context.Context) error {
 			}
 			newMessage = fmt.Sprintf("(%s) %s", workflow.Status.Progress, workflow.Status.Message)
 			log.Debug(fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
-			if status == pb.AppGroupStatus_APP_GROUP_INSTALLING {
+			if status == domain.AppGroupStatus_INSTALLING {
 				switch workflow.Status.Phase {
 				case "Running":
-					newStatus = pb.AppGroupStatus_APP_GROUP_INSTALLING
+					newStatus = domain.AppGroupStatus_INSTALLING
 				case "Succeeded":
-					newStatus = pb.AppGroupStatus_APP_GROUP_RUNNING
+					newStatus = domain.AppGroupStatus_RUNNING
 				case "Failed":
-					newStatus = pb.AppGroupStatus_APP_GROUP_ERROR
+					newStatus = domain.AppGroupStatus_ERROR
 				case "Error":
-					newStatus = pb.AppGroupStatus_APP_GROUP_ERROR
+					newStatus = domain.AppGroupStatus_ERROR
 				}
-			} else if status == pb.AppGroupStatus_APP_GROUP_DELETING {
+			} else if status == domain.AppGroupStatus_DELETING {
 				switch workflow.Status.Phase {
 				case "Running":
-					newStatus = pb.AppGroupStatus_APP_GROUP_DELETING
+					newStatus = domain.AppGroupStatus_DELETING
 				case "Succeeded":
-					newStatus = pb.AppGroupStatus_APP_GROUP_DELETED
+					newStatus = domain.AppGroupStatus_DELETED
 				case "Failed":
-					newStatus = pb.AppGroupStatus_APP_GROUP_ERROR
+					newStatus = domain.AppGroupStatus_ERROR
 				case "Error":
-					newStatus = pb.AppGroupStatus_APP_GROUP_ERROR
+					newStatus = domain.AppGroupStatus_ERROR
 				}
 			}
-			if newStatus == pb.AppGroupStatus_APP_GROUP_UNSPECIFIED {
+			if newStatus == domain.AppGroupStatus_PENDING {
 				continue
 			}
 		} else {
-			// [TODO] READY 상태를 추가하도록 할 것
 			continue
 		}
 
