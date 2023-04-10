@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/openinfradev/tks-common/pkg/argowf"
+	argo "github.com/openinfradev/tks-api/pkg/argo-client"
 	"github.com/openinfradev/tks-common/pkg/log"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -18,7 +18,7 @@ import (
 const INTERVAL_SEC = 1
 
 var (
-	argowfClient        argowf.Client
+	argowfClient        argo.ArgoClient
 	clusterAccessor     *cluster.ClusterAccessor
 	applicationAccessor *application.ApplicationAccessor
 )
@@ -58,7 +58,7 @@ func main() {
 	applicationAccessor = application.New(db)
 
 	// initialize external clients
-	argowfClient, err = argowf.New(viper.GetString("argo-address"), viper.GetInt("argo-port"), false, "")
+	argowfClient, err = argo.New(viper.GetString("argo-address"), viper.GetInt("argo-port"), false, "")
 	if err != nil {
 		log.Fatal("failed to create argowf client : ", err)
 	}
