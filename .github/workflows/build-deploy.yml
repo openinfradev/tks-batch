@@ -4,7 +4,7 @@ on:
     branches:
       - main
       - "release**"
-      - ft
+      - develop
 env:
   SERVICE: tks-batch
   TAG: ${{github.sha}}

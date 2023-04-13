@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"fmt"
 	"os"
@@ -60,3 +61,4 @@ func TestMain(m *testing.M) {
 
 	os.Exit(code)
 }
+*/
