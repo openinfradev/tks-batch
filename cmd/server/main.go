@@ -6,7 +6,7 @@ import (
 	"time"
 
 	argo "github.com/openinfradev/tks-api/pkg/argo-client"
-	"github.com/openinfradev/tks-common/pkg/log"
+	"github.com/openinfradev/tks-api/pkg/log"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
