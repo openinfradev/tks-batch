@@ -11,16 +11,20 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/openinfradev/tks-batch/internal/application"
+	cloudAccount "github.com/openinfradev/tks-batch/internal/cloud-account"
 	"github.com/openinfradev/tks-batch/internal/cluster"
 	"github.com/openinfradev/tks-batch/internal/database"
+	"github.com/openinfradev/tks-batch/internal/organization"
 )
 
 const INTERVAL_SEC = 1
 
 var (
-	argowfClient        argo.ArgoClient
-	clusterAccessor     *cluster.ClusterAccessor
-	applicationAccessor *application.ApplicationAccessor
+	argowfClient         argo.ArgoClient
+	clusterAccessor      *cluster.ClusterAccessor
+	applicationAccessor  *application.ApplicationAccessor
+	cloudAccountAccessor *cloudAccount.CloudAccountAccessor
+	organizationAccessor *organization.OrganizationAccessor
 )
 
 func init() {
@@ -56,6 +60,8 @@ func main() {
 	}
 	clusterAccessor = cluster.New(db)
 	applicationAccessor = application.New(db)
+	cloudAccountAccessor = cloudAccount.New(db)
+	organizationAccessor = organization.New(db)
 
 	// initialize external clients
 	argowfClient, err = argo.New(viper.GetString("argo-address"), viper.GetInt("argo-port"), false, "")
@@ -69,6 +75,14 @@ func main() {
 			log.Error(err)
 		}
 		err = processAppGroupStatus()
+		if err != nil {
+			log.Error(err)
+		}
+		err = processCloudAccountStatus()
+		if err != nil {
+			log.Error(err)
+		}
+		err = processOrganizationStatus()
 		if err != nil {
 			log.Error(err)
 		}
