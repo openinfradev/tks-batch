@@ -47,9 +47,9 @@ func processCloudAccountStatus() error {
 				case "Succeeded":
 					newStatus = domain.CloudAccountStatus_CREATED
 				case "Failed":
-					newStatus = domain.CloudAccountStatus_ERROR
+					newStatus = domain.CloudAccountStatus_CREATE_ERROR
 				case "Error":
-					newStatus = domain.CloudAccountStatus_ERROR
+					newStatus = domain.CloudAccountStatus_CREATE_ERROR
 				}
 			} else if status == domain.CloudAccountStatus_DELETING {
 				switch workflow.Status.Phase {
@@ -58,9 +58,9 @@ func processCloudAccountStatus() error {
 				case "Succeeded":
 					newStatus = domain.CloudAccountStatus_DELETED
 				case "Failed":
-					newStatus = domain.CloudAccountStatus_ERROR
+					newStatus = domain.CloudAccountStatus_DELETE_ERROR
 				case "Error":
-					newStatus = domain.CloudAccountStatus_ERROR
+					newStatus = domain.CloudAccountStatus_DELETE_ERROR
 				}
 			}
 			if newStatus == domain.CloudAccountStatus_PENDING {
@@ -76,6 +76,15 @@ func processCloudAccountStatus() error {
 			if err != nil {
 				log.Error("Failed to update cloudaccount status err : ", err)
 				continue
+			}
+
+			if newStatus == domain.CloudAccountStatus_CREATED {
+				err = cloudAccountAccessor.UpdateCreatedIAM(cloudAccountId, true)
+				if err != nil {
+					log.Error("Failed to update cloudaccount createdIAM err : ", err)
+					continue
+				}
+
 			}
 		}
 	}
