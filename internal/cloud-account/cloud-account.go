@@ -61,7 +61,7 @@ func (x *CloudAccountAccessor) UpdateCreatedIAM(cloudAccountId string, createdIA
 	log.Info(fmt.Sprintf("UpdateCreatedIAM. cloudAccountId[%s], createdIAM[%t]", cloudAccountId, createdIAM))
 	res := x.db.Model(CloudAccount{}).
 		Where("ID = ?", cloudAccountId).
-		Updates(map[string]interface{}{"CreatedIAM": createdIAM})
+		Updates(map[string]interface{}{"created_iam": createdIAM})
 
 	if res.Error != nil || res.RowsAffected == 0 {
 		return fmt.Errorf("nothing updated in cloudAccount with id %s", cloudAccountId)
