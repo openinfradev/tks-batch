@@ -47,9 +47,9 @@ func processClusterStatus() error {
 				case "Succeeded":
 					newStatus = domain.ClusterStatus_RUNNING
 				case "Failed":
-					newStatus = domain.ClusterStatus_ERROR
+					newStatus = domain.ClusterStatus_INSTALL_ERROR
 				case "Error":
-					newStatus = domain.ClusterStatus_ERROR
+					newStatus = domain.ClusterStatus_INSTALL_ERROR
 				}
 			} else if status == domain.ClusterStatus_DELETING {
 				switch workflow.Status.Phase {
@@ -58,9 +58,9 @@ func processClusterStatus() error {
 				case "Succeeded":
 					newStatus = domain.ClusterStatus_DELETED
 				case "Failed":
-					newStatus = domain.ClusterStatus_ERROR
+					newStatus = domain.ClusterStatus_DELETE_ERROR
 				case "Error":
-					newStatus = domain.ClusterStatus_ERROR
+					newStatus = domain.ClusterStatus_DELETE_ERROR
 				}
 			}
 			if newStatus == domain.ClusterStatus_PENDING {

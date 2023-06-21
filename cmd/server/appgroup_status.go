@@ -46,9 +46,9 @@ func processAppGroupStatus() error {
 				case "Succeeded":
 					newStatus = domain.AppGroupStatus_RUNNING
 				case "Failed":
-					newStatus = domain.AppGroupStatus_ERROR
+					newStatus = domain.AppGroupStatus_INSTALL_ERROR
 				case "Error":
-					newStatus = domain.AppGroupStatus_ERROR
+					newStatus = domain.AppGroupStatus_INSTALL_ERROR
 				}
 			} else if status == domain.AppGroupStatus_DELETING {
 				switch workflow.Status.Phase {
@@ -57,9 +57,9 @@ func processAppGroupStatus() error {
 				case "Succeeded":
 					newStatus = domain.AppGroupStatus_DELETED
 				case "Failed":
-					newStatus = domain.AppGroupStatus_ERROR
+					newStatus = domain.AppGroupStatus_DELETE_ERROR
 				case "Error":
-					newStatus = domain.AppGroupStatus_ERROR
+					newStatus = domain.AppGroupStatus_DELETE_ERROR
 				}
 			}
 			if newStatus == domain.AppGroupStatus_PENDING {
