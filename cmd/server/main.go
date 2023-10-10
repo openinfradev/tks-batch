@@ -17,7 +17,7 @@ import (
 	"github.com/openinfradev/tks-batch/internal/organization"
 )
 
-const INTERVAL_SEC = 1
+const INTERVAL_SEC = 5
 
 var (
 	argowfClient         argo.ArgoClient
@@ -31,6 +31,10 @@ func init() {
 	flag.Int("port", 9112, "service port")
 	flag.String("argo-address", "localhost", "server address for argo-workflow-server")
 	flag.Int("argo-port", 2746, "server port for argo-workflow-server")
+	flag.String("tks-api-address", "http://localhost", "server address for tks-api")
+	flag.Int("tks-api-port", 8080, "server port number for tks-api")
+	flag.String("tks-api-account", "", "account name for tks-api")
+	flag.String("tks-api-password", "", "the password for tks-api account")
 
 	flag.String("dbhost", "localhost", "host of postgreSQL")
 	flag.String("dbport", "5432", "port of postgreSQL")
@@ -83,6 +87,10 @@ func main() {
 			log.Error(err)
 		}
 		err = processOrganizationStatus()
+		if err != nil {
+			log.Error(err)
+		}
+		err = processClusterByoh()
 		if err != nil {
 			log.Error(err)
 		}
