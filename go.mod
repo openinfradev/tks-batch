@@ -3,7 +3,7 @@ module github.com/openinfradev/tks-batch
 go 1.18
 
 require (
-	github.com/openinfradev/tks-api v0.0.0-20230621070855-6fc105a25e72
+	github.com/openinfradev/tks-api v0.0.0-20231017022609-fe95bb67dc60
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.15.0
 	gorm.io/driver/postgres v1.4.5
