@@ -11,10 +11,12 @@ import (
 
 // Cluster represents a kubernetes cluster information.
 type Cluster struct {
-	ID         string `gorm:"primarykey"`
-	WorkflowId string
-	Status     domain.ClusterStatus
-	StatusDesc string
+	ID             string `gorm:"primarykey"`
+	OrganizationId string
+	WorkflowId     string
+	Status         domain.ClusterStatus
+	StatusDesc     string
+	IsStack        bool
 }
 
 // Accessor accesses cluster info in DB.
@@ -38,7 +40,7 @@ func (x *ClusterAccessor) GetIncompleteClusters() ([]Cluster, error) {
 	var clusters []Cluster
 
 	res := x.db.
-		Where("status IN ?", []domain.ClusterStatus{domain.ClusterStatus_INSTALLING, domain.ClusterStatus_DELETING}).
+		Where("status IN ?", []domain.ClusterStatus{domain.ClusterStatus_BOOTSTRAPPING, domain.ClusterStatus_INSTALLING, domain.ClusterStatus_DELETING}).
 		Find(&clusters)
 
 	if res.Error != nil {
@@ -48,11 +50,37 @@ func (x *ClusterAccessor) GetIncompleteClusters() ([]Cluster, error) {
 	return clusters, nil
 }
 
-func (x *ClusterAccessor) UpdateClusterStatus(clusterId string, status domain.ClusterStatus, statusDesc string, workflowId string) error {
+func (x *ClusterAccessor) GetBootstrappedByohClusters() ([]Cluster, error) {
+	var clusters []Cluster
+
+	res := x.db.
+		Where("cloud_service = 'BYOH' AND status IN ?", []domain.ClusterStatus{domain.ClusterStatus_BOOTSTRAPPED}).
+		Find(&clusters)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return clusters, nil
+}
+
+func (x *ClusterAccessor) UpdateClusterStatusWithWorkflow(clusterId string, status domain.ClusterStatus, statusDesc string, workflowId string) error {
 	log.Info(fmt.Sprintf("UpdateClusterStatus. clusterId[%s], status[%d], statusDesc[%s], workflowId[%s]", clusterId, status, statusDesc, workflowId))
 	res := x.db.Model(Cluster{}).
 		Where("ID = ?", clusterId).
 		Updates(map[string]interface{}{"Status": status, "StatusDesc": statusDesc, "WorkflowId": workflowId})
+
+	if res.Error != nil || res.RowsAffected == 0 {
+		return fmt.Errorf("nothing updated in cluster with id %s", clusterId)
+	}
+	return nil
+}
+
+func (x *ClusterAccessor) UpdateClusterStatus(clusterId string, status domain.ClusterStatus) error {
+	log.Info(fmt.Sprintf("UpdateClusterStatus. clusterId[%s], status[%d]", clusterId, status))
+	res := x.db.Model(Cluster{}).
+		Where("ID = ?", clusterId).
+		Updates(map[string]interface{}{"Status": status})
 
 	if res.Error != nil || res.RowsAffected == 0 {
 		return fmt.Errorf("nothing updated in cluster with id %s", clusterId)
