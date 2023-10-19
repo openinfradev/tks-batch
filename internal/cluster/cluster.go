@@ -64,23 +64,11 @@ func (x *ClusterAccessor) GetBootstrappedByohClusters() ([]Cluster, error) {
 	return clusters, nil
 }
 
-func (x *ClusterAccessor) UpdateClusterStatusWithWorkflow(clusterId string, status domain.ClusterStatus, statusDesc string, workflowId string) error {
+func (x *ClusterAccessor) UpdateClusterStatus(clusterId string, status domain.ClusterStatus, statusDesc string, workflowId string) error {
 	log.Info(fmt.Sprintf("UpdateClusterStatus. clusterId[%s], status[%d], statusDesc[%s], workflowId[%s]", clusterId, status, statusDesc, workflowId))
 	res := x.db.Model(Cluster{}).
 		Where("ID = ?", clusterId).
 		Updates(map[string]interface{}{"Status": status, "StatusDesc": statusDesc, "WorkflowId": workflowId})
-
-	if res.Error != nil || res.RowsAffected == 0 {
-		return fmt.Errorf("nothing updated in cluster with id %s", clusterId)
-	}
-	return nil
-}
-
-func (x *ClusterAccessor) UpdateClusterStatus(clusterId string, status domain.ClusterStatus) error {
-	log.Info(fmt.Sprintf("UpdateClusterStatus. clusterId[%s], status[%d]", clusterId, status))
-	res := x.db.Model(Cluster{}).
-		Where("ID = ?", clusterId).
-		Updates(map[string]interface{}{"Status": status})
 
 	if res.Error != nil || res.RowsAffected == 0 {
 		return fmt.Errorf("nothing updated in cluster with id %s", clusterId)
