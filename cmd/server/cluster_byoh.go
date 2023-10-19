@@ -38,7 +38,8 @@ func processClusterByoh() error {
 		url := fmt.Sprintf("clusters/%s/nodes", clusterId)
 		body, err := apiClient.Get(url)
 		if err != nil {
-			return err
+			log.Error(err)
+			continue
 		}
 
 		var out domain.GetClusterNodesResponse
