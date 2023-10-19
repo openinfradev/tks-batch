@@ -38,7 +38,8 @@ func processClusterByoh() error {
 		url := fmt.Sprintf("clusters/%s/nodes", clusterId)
 		body, err := apiClient.Get(url)
 		if err != nil {
-			return err
+			log.Error(err)
+			continue
 		}
 
 		var out domain.GetClusterNodesResponse
@@ -55,7 +56,8 @@ func processClusterByoh() error {
 		//completed = true // FOR TEST
 		if completed {
 			log.Info(fmt.Sprintf("all agents registered! starting stack creation. clusterId %s", clusterId))
-			if err = clusterAccessor.UpdateClusterStatus(clusterId, domain.ClusterStatus_INSTALLING); err != nil {
+			// clusterId, newStatus, newMessage, workflowId
+			if err = clusterAccessor.UpdateClusterStatus(clusterId, domain.ClusterStatus_INSTALLING, "", ""); err != nil {
 				log.Error("Failed to update cluster status err : ", err)
 				continue
 			}
