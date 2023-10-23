@@ -220,10 +220,8 @@ github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyua
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWbfPhv4DMiApHyliiK5xCTNVSPiaAs=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
-github.com/openinfradev/tks-api v0.0.0-20231017022609-fe95bb67dc60 h1:aKcP0zqiuQuruwJ3j+Eb06QKkZKvddFuZ9XPMsANpgg=
-github.com/openinfradev/tks-api v0.0.0-20231017022609-fe95bb67dc60/go.mod h1:91WDknrRu9zZZ1rI1OGhj7dqqc4DQJb830y7EU5t85I=
-github.com/openinfradev/tks-api v0.0.0-20231019072857-c66fbc2972d6 h1:6ck/hLKutTVAurJR2X5HsS/0Kf6+l8DxRf1lwK1R6Z8=
-github.com/openinfradev/tks-api v0.0.0-20231019072857-c66fbc2972d6/go.mod h1:91WDknrRu9zZZ1rI1OGhj7dqqc4DQJb830y7EU5t85I=
+github.com/openinfradev/tks-api v0.0.0-20231023034343-1580951459e9 h1:Qhly947YqvzbproX+sIAT8C4beZiJuGgFx78i0PLp2U=
+github.com/openinfradev/tks-api v0.0.0-20231023034343-1580951459e9/go.mod h1:91WDknrRu9zZZ1rI1OGhj7dqqc4DQJb830y7EU5t85I=
 github.com/pelletier/go-toml/v2 v2.0.6 h1:nrzqCb7j9cDFj2coyLNLaZuJTLjWjlaz6nvTvIwycIU=
 github.com/pelletier/go-toml/v2 v2.0.6/go.mod h1:eumQOmlWiOPt5WriQQqoM5y18pDHwha2N+QD+EUNTek=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
