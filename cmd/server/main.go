@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	_apiClient "github.com/openinfradev/tks-api/pkg/api-client"
 	argo "github.com/openinfradev/tks-api/pkg/argo-client"
 	"github.com/openinfradev/tks-api/pkg/log"
 	"github.com/spf13/pflag"
@@ -25,6 +26,7 @@ var (
 	applicationAccessor  *application.ApplicationAccessor
 	cloudAccountAccessor *cloudAccount.CloudAccountAccessor
 	organizationAccessor *organization.OrganizationAccessor
+	apiClient            _apiClient.ApiClient
 )
 
 func init() {
@@ -71,6 +73,10 @@ func main() {
 	argowfClient, err = argo.New(viper.GetString("argo-address"), viper.GetInt("argo-port"), false, "")
 	if err != nil {
 		log.Fatal("failed to create argowf client : ", err)
+	}
+	apiClient, err = _apiClient.New(fmt.Sprintf("%s:%d", viper.GetString("tks-api-address"), viper.GetInt("tks-api-port")))
+	if err != nil {
+		log.Fatal("failed to create tks-api client : ", err)
 	}
 
 	for {
