@@ -28,8 +28,9 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/openinfradev/tks-api v0.0.0-20230621070855-6fc105a25e72 // indirect
+	github.com/openinfradev/tks-api v0.0.0-20231023034343-1580951459e9 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/afero v1.9.3 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
@@ -46,4 +47,3 @@ require (
 replace github.com/openinfradev/tks-batch => ./
 
 //replace github.com/openinfradev/tks-api => ../tks-api
-//replace github.com/openinfradev/tks-proto => ./tks-proto

@@ -62,6 +62,17 @@ func processClusterStatus() error {
 				case "Error":
 					newStatus = domain.ClusterStatus_DELETE_ERROR
 				}
+			} else if status == domain.ClusterStatus_BOOTSTRAPPING {
+				switch workflow.Status.Phase {
+				case "Running":
+					newStatus = domain.ClusterStatus_BOOTSTRAPPING
+				case "Succeeded":
+					newStatus = domain.ClusterStatus_BOOTSTRAPPED
+				case "Failed":
+					newStatus = domain.ClusterStatus_BOOTSTRAP_ERROR
+				case "Error":
+					newStatus = domain.ClusterStatus_BOOTSTRAP_ERROR
+				}
 			}
 			if newStatus == domain.ClusterStatus_PENDING {
 				continue

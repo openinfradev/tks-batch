@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	_apiClient "github.com/openinfradev/tks-api/pkg/api-client"
 	argo "github.com/openinfradev/tks-api/pkg/argo-client"
 	"github.com/openinfradev/tks-api/pkg/log"
 	"github.com/spf13/pflag"
@@ -17,7 +18,7 @@ import (
 	"github.com/openinfradev/tks-batch/internal/organization"
 )
 
-const INTERVAL_SEC = 1
+const INTERVAL_SEC = 5
 
 var (
 	argowfClient         argo.ArgoClient
@@ -25,12 +26,17 @@ var (
 	applicationAccessor  *application.ApplicationAccessor
 	cloudAccountAccessor *cloudAccount.CloudAccountAccessor
 	organizationAccessor *organization.OrganizationAccessor
+	apiClient            _apiClient.ApiClient
 )
 
 func init() {
 	flag.Int("port", 9112, "service port")
 	flag.String("argo-address", "localhost", "server address for argo-workflow-server")
 	flag.Int("argo-port", 2746, "server port for argo-workflow-server")
+	flag.String("tks-api-address", "http://tks-api.tks.svc", "server address for tks-api")
+	flag.Int("tks-api-port", 9110, "server port number for tks-api")
+	flag.String("tks-api-account", "admin", "account name for tks-api")
+	flag.String("tks-api-password", "admin", "the password for tks-api account")
 
 	flag.String("dbhost", "localhost", "host of postgreSQL")
 	flag.String("dbport", "5432", "port of postgreSQL")
@@ -68,6 +74,10 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to create argowf client : ", err)
 	}
+	apiClient, err = _apiClient.New(fmt.Sprintf("%s:%d", viper.GetString("tks-api-address"), viper.GetInt("tks-api-port")))
+	if err != nil {
+		log.Fatal("failed to create tks-api client : ", err)
+	}
 
 	for {
 		err = processClusterStatus()
@@ -83,6 +93,10 @@ func main() {
 			log.Error(err)
 		}
 		err = processOrganizationStatus()
+		if err != nil {
+			log.Error(err)
+		}
+		err = processClusterByoh()
 		if err != nil {
 			log.Error(err)
 		}
