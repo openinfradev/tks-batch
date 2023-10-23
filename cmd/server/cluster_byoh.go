@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	_apiClient "github.com/openinfradev/tks-api/pkg/api-client"
 	"github.com/openinfradev/tks-api/pkg/domain"
 	"github.com/openinfradev/tks-api/pkg/log"
 	"github.com/spf13/viper"
@@ -25,16 +24,13 @@ func processClusterByoh() error {
 	log.Info("byoh clusters : ", clusters)
 
 	token = getTksApiToken()
+	if token != "" {
+		apiClient.SetToken(token)
+	}
 	for _, cluster := range clusters {
 		clusterId := cluster.ID
 
 		// check agent node
-		apiClient, err := _apiClient.New(fmt.Sprintf("%s:%d", viper.GetString("tks-api-address"), viper.GetInt("tks-api-port")), token)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-
 		url := fmt.Sprintf("clusters/%s/nodes", clusterId)
 		body, err := apiClient.Get(url)
 		if err != nil {
@@ -59,12 +55,6 @@ func processClusterByoh() error {
 			// clusterId, newStatus, newMessage, workflowId
 			if err = clusterAccessor.UpdateClusterStatus(clusterId, domain.ClusterStatus_INSTALLING, "", ""); err != nil {
 				log.Error("Failed to update cluster status err : ", err)
-				continue
-			}
-
-			apiClient, err := _apiClient.New(fmt.Sprintf("%s:%d", viper.GetString("tks-api-address"), viper.GetInt("tks-api-port")), token)
-			if err != nil {
-				log.Error(err)
 				continue
 			}
 
@@ -98,13 +88,7 @@ func transcode(in, out interface{}) {
 }
 
 func getTksApiToken() string {
-	apiClient, err := _apiClient.New(fmt.Sprintf("%s:%d", viper.GetString("tks-api-address"), viper.GetInt("tks-api-port")), "")
-	if err != nil {
-		log.Error(err)
-		return ""
-	}
-
-	_, err = apiClient.Post("auth/ping", domain.PingTokenRequest{
+	_, err := apiClient.Post("auth/ping", domain.PingTokenRequest{
 		Token:          token,
 		OrganizationId: "master",
 	})
