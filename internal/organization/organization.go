@@ -5,6 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/gofrs/uuid"
 	"github.com/openinfradev/tks-api/pkg/domain"
 	"github.com/openinfradev/tks-api/pkg/log"
 )
@@ -53,6 +54,18 @@ func (x *OrganizationAccessor) UpdateOrganizationStatus(organizationId string, s
 	res := x.db.Model(Organization{}).
 		Where("ID = ?", organizationId).
 		Updates(map[string]interface{}{"Status": status, "StatusDesc": statusDesc, "WorkflowId": workflowId})
+
+	if res.Error != nil || res.RowsAffected == 0 {
+		return fmt.Errorf("nothing updated in organization with id %s", organizationId)
+	}
+	return nil
+}
+
+func (x *OrganizationAccessor) UpdateOrganizationAdmin(organizationId string, adminId uuid.UUID) error {
+	log.Info(fmt.Sprintf("UpdateOrganizationAdmin. organizationId[%s], adminId[%s]", organizationId, adminId))
+	res := x.db.Model(Organization{}).
+		Where("ID = ?", organizationId).
+		Updates(map[string]interface{}{"admin_id": adminId})
 
 	if res.Error != nil || res.RowsAffected == 0 {
 		return fmt.Errorf("nothing updated in organization with id %s", organizationId)

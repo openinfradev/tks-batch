@@ -16,6 +16,7 @@ import (
 	"github.com/openinfradev/tks-batch/internal/cluster"
 	"github.com/openinfradev/tks-batch/internal/database"
 	"github.com/openinfradev/tks-batch/internal/organization"
+	"github.com/openinfradev/tks-batch/internal/user"
 )
 
 const INTERVAL_SEC = 5
@@ -26,6 +27,7 @@ var (
 	applicationAccessor  *application.ApplicationAccessor
 	cloudAccountAccessor *cloudAccount.CloudAccountAccessor
 	organizationAccessor *organization.OrganizationAccessor
+	userAccessor         *user.UserAccessor
 	apiClient            _apiClient.ApiClient
 )
 
@@ -68,6 +70,7 @@ func main() {
 	applicationAccessor = application.New(db)
 	cloudAccountAccessor = cloudAccount.New(db)
 	organizationAccessor = organization.New(db)
+	userAccessor = user.New(db)
 
 	// initialize external clients
 	argowfClient, err = argo.New(viper.GetString("argo-address"), viper.GetInt("argo-port"), false, "")

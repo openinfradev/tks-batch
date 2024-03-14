@@ -78,6 +78,21 @@ func processOrganizationStatus() error {
 				continue
 			}
 		}
+
+		if newStatus == domain.OrganizationStatus_CREATED {
+			user, err := userAccessor.GetOrganizationAdmin(organizationId)
+			if err != nil {
+				log.Error("Failed to get organization admin err : ", err)
+				continue
+			}
+
+			log.Debug(fmt.Sprintf("update organization admin!! organizationId [%s], adminId [%s]", organizationId, user.ID.String()))
+			err = organizationAccessor.UpdateOrganizationAdmin(organizationId, user.ID)
+			if err != nil {
+				log.Error("Failed to update organization admin err : ", err)
+				continue
+			}
+		}
 	}
 	return nil
 }
