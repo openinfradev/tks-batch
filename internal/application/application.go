@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -47,7 +48,7 @@ func (x *ApplicationAccessor) GetIncompleteAppGroups() ([]AppGroup, error) {
 }
 
 func (x *ApplicationAccessor) UpdateAppGroupStatus(appGroupId string, status domain.AppGroupStatus, statusDesc string, workflowId string) error {
-	log.Info(fmt.Sprintf("UpdateAppGroupStatus. appGroupId[%s], status[%d], statusDesc[%s], workflowId[%s]", appGroupId, status, statusDesc, workflowId))
+	log.Info(context.TODO(), fmt.Sprintf("UpdateAppGroupStatus. appGroupId[%s], status[%d], statusDesc[%s], workflowId[%s]", appGroupId, status, statusDesc, workflowId))
 	res := x.db.Model(AppGroup{}).
 		Where("ID = ?", appGroupId).
 		Updates(map[string]interface{}{"Status": status, "StatusDesc": statusDesc, "WorkflowId": workflowId})

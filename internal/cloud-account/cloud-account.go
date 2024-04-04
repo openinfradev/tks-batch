@@ -1,6 +1,7 @@
 package cloudAccount
 
 import (
+	"context"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -46,7 +47,7 @@ func (x *CloudAccountAccessor) GetIncompleteCloudAccounts() ([]CloudAccount, err
 }
 
 func (x *CloudAccountAccessor) UpdateCloudAccountStatus(cloudAccountId string, status domain.CloudAccountStatus, statusDesc string, workflowId string) error {
-	log.Info(fmt.Sprintf("UpdateCloudAccountStatus. cloudAccountId[%s], status[%d], statusDesc[%s], workflowId[%s]", cloudAccountId, status, statusDesc, workflowId))
+	log.Info(context.TODO(), fmt.Sprintf("UpdateCloudAccountStatus. cloudAccountId[%s], status[%d], statusDesc[%s], workflowId[%s]", cloudAccountId, status, statusDesc, workflowId))
 	res := x.db.Model(CloudAccount{}).
 		Where("ID = ?", cloudAccountId).
 		Updates(map[string]interface{}{"Status": status, "StatusDesc": statusDesc, "WorkflowId": workflowId})
@@ -58,7 +59,7 @@ func (x *CloudAccountAccessor) UpdateCloudAccountStatus(cloudAccountId string, s
 }
 
 func (x *CloudAccountAccessor) UpdateCreatedIAM(cloudAccountId string, createdIAM bool) error {
-	log.Info(fmt.Sprintf("UpdateCreatedIAM. cloudAccountId[%s], createdIAM[%t]", cloudAccountId, createdIAM))
+	log.Info(context.TODO(), fmt.Sprintf("UpdateCreatedIAM. cloudAccountId[%s], createdIAM[%t]", cloudAccountId, createdIAM))
 	res := x.db.Model(CloudAccount{}).
 		Where("ID = ?", cloudAccountId).
 		Updates(map[string]interface{}{"created_iam": createdIAM})

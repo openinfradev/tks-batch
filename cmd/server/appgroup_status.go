@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/openinfradev/tks-api/pkg/domain"
@@ -17,7 +18,7 @@ func processAppGroupStatus() error {
 	if len(appGroups) == 0 {
 		return nil
 	}
-	log.Info("appGroups : ", appGroups)
+	log.Info(context.TODO(), "appGroups : ", appGroups)
 
 	for i := range appGroups {
 		appGroup := appGroups[i]
@@ -32,13 +33,13 @@ func processAppGroupStatus() error {
 		var newMessage string
 
 		if workflowId != "" {
-			workflow, err := argowfClient.GetWorkflow("argo", workflowId)
+			workflow, err := argowfClient.GetWorkflow(context.TODO(), "argo", workflowId)
 			if err != nil {
-				log.Error("failed to get argo workflow. err : ", err)
+				log.Error(context.TODO(), "failed to get argo workflow. err : ", err)
 				continue
 			}
 			newMessage = fmt.Sprintf("(%s) %s", workflow.Status.Progress, workflow.Status.Message)
-			log.Debug(fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
+			log.Debug(context.TODO(), fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
 			if status == domain.AppGroupStatus_INSTALLING {
 				switch workflow.Status.Phase {
 				case "Running":
@@ -70,10 +71,10 @@ func processAppGroupStatus() error {
 		}
 
 		if status != newStatus || statusDesc != newMessage {
-			log.Debug(fmt.Sprintf("update status!! appGroupId [%s], newStatus [%s], newMessage [%s]", appGroupId, newStatus, newMessage))
+			log.Debug(context.TODO(), fmt.Sprintf("update status!! appGroupId [%s], newStatus [%s], newMessage [%s]", appGroupId, newStatus, newMessage))
 			err := applicationAccessor.UpdateAppGroupStatus(appGroupId, newStatus, newMessage, workflowId)
 			if err != nil {
-				log.Error("Failed to update appgroup status err : ", err)
+				log.Error(context.TODO(), "Failed to update appgroup status err : ", err)
 				continue
 			}
 		}
