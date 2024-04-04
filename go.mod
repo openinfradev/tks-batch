@@ -6,7 +6,7 @@ toolchain go1.21.7
 
 require (
 	github.com/gofrs/uuid v4.0.0+incompatible
-	github.com/openinfradev/tks-api v0.0.0-20240403055129-c624181041d6
+	github.com/openinfradev/tks-api v0.0.0-20240404091154-a3b290667109
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
 	gopkg.in/yaml.v2 v2.4.0

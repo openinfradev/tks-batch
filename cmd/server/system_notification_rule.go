@@ -186,9 +186,11 @@ func replaceMetricParameter(l []systemNotification.SystemNotificationMetricParam
 	return s
 }
 
+/*
 func modelToYaml(in any) string {
 	a, _ := yaml.Marshal(in)
 	n := len(a)        //Find the length of the byte array
 	s := string(a[:n]) //convert to string
 	return s
 }
+*/
