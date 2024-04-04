@@ -161,6 +161,16 @@ func processSystemNotificationRule() error {
 			continue
 		}
 
+		// restart thanos-ruler
+		deletePolicy := metav1.DeletePropagationForeground
+		err = clientset.CoreV1().Pods("lma").Delete(context.TODO(), "thanos-ruler-0", metav1.DeleteOptions{
+			PropagationPolicy: &deletePolicy,
+		})
+		if err != nil {
+			log.Error(context.TODO(), err)
+			continue
+		}
+
 		// update status
 		var organizationRuleIds []uuid.UUID
 		for _, r := range rules {
@@ -168,7 +178,6 @@ func processSystemNotificationRule() error {
 				organizationRuleIds = append(organizationRuleIds, r.ID)
 			}
 		}
-
 		err = systemNotificationRuleAccessor.UpdateSystemNotificationRuleStatus(organizationRuleIds, domain.SystemNotificationRuleStatus_APPLYED)
 		if err != nil {
 			log.Error(context.TODO(), err)
