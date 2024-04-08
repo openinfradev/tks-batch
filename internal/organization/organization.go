@@ -1,6 +1,7 @@
 package organization
 
 import (
+	"context"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -49,7 +50,7 @@ func (x *OrganizationAccessor) GetIncompleteOrganizations() ([]Organization, err
 }
 
 func (x *OrganizationAccessor) UpdateOrganizationStatus(organizationId string, status domain.OrganizationStatus, statusDesc string, workflowId string) error {
-	log.Info(fmt.Sprintf("UpdateOrganizationStatus. organizationId[%s], status[%d], statusDesc[%s], workflowId[%s]", organizationId, status, statusDesc, workflowId))
+	log.Info(context.TODO(), fmt.Sprintf("UpdateOrganizationStatus. organizationId[%s], status[%d], statusDesc[%s], workflowId[%s]", organizationId, status, statusDesc, workflowId))
 	res := x.db.Model(Organization{}).
 		Where("ID = ?", organizationId).
 		Updates(map[string]interface{}{"Status": status, "StatusDesc": statusDesc, "WorkflowId": workflowId})

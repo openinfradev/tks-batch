@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/openinfradev/tks-api/pkg/domain"
@@ -16,7 +17,7 @@ func processClusterStatus() error {
 	if len(clusters) == 0 {
 		return nil
 	}
-	log.Info("clusters : ", clusters)
+	log.Info(context.TODO(), "clusters : ", clusters)
 
 	for i := range clusters {
 		cluster := clusters[i]
@@ -31,14 +32,14 @@ func processClusterStatus() error {
 		var newMessage string
 
 		if workflowId != "" {
-			workflow, err := argowfClient.GetWorkflow("argo", workflowId)
+			workflow, err := argowfClient.GetWorkflow(context.TODO(), "argo", workflowId)
 			if err != nil {
-				log.Error("failed to get argo workflow. err : ", err)
+				log.Error(context.TODO(), "failed to get argo workflow. err : ", err)
 				continue
 			}
 
 			newMessage = fmt.Sprintf("(%s) %s", workflow.Status.Progress, workflow.Status.Message)
-			log.Debug(fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
+			log.Debug(context.TODO(), fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
 
 			if status == domain.ClusterStatus_INSTALLING {
 				switch workflow.Status.Phase {
@@ -82,10 +83,10 @@ func processClusterStatus() error {
 		}
 
 		if status != newStatus || statusDesc != newMessage {
-			log.Debug(fmt.Sprintf("update status!! clusterId [%s], newStatus [%s], newMessage [%s]", clusterId, newStatus, newMessage))
+			log.Debug(context.TODO(), fmt.Sprintf("update status!! clusterId [%s], newStatus [%s], newMessage [%s]", clusterId, newStatus, newMessage))
 			err := clusterAccessor.UpdateClusterStatus(clusterId, newStatus, newMessage, workflowId)
 			if err != nil {
-				log.Error("Failed to update cluster status err : ", err)
+				log.Error(context.TODO(), "Failed to update cluster status err : ", err)
 				continue
 			}
 		}

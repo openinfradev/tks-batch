@@ -13,3 +13,6 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+cmd/server/server
+cmd/server/start_dev.sh

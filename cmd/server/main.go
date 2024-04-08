@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"time"
@@ -16,17 +17,19 @@ import (
 	"github.com/openinfradev/tks-batch/internal/cluster"
 	"github.com/openinfradev/tks-batch/internal/database"
 	"github.com/openinfradev/tks-batch/internal/organization"
+	systemNotificationRule "github.com/openinfradev/tks-batch/internal/system-notification-rule"
 )
 
 const INTERVAL_SEC = 5
 
 var (
-	argowfClient         argo.ArgoClient
-	clusterAccessor      *cluster.ClusterAccessor
-	applicationAccessor  *application.ApplicationAccessor
-	cloudAccountAccessor *cloudAccount.CloudAccountAccessor
-	organizationAccessor *organization.OrganizationAccessor
-	apiClient            _apiClient.ApiClient
+	argowfClient                   argo.ArgoClient
+	clusterAccessor                *cluster.ClusterAccessor
+	applicationAccessor            *application.ApplicationAccessor
+	cloudAccountAccessor           *cloudAccount.CloudAccountAccessor
+	organizationAccessor           *organization.OrganizationAccessor
+	systemNotificationRuleAccessor *systemNotificationRule.SystemNotificationAccessor
+	apiClient                      _apiClient.ApiClient
 )
 
 func init() {
@@ -37,6 +40,7 @@ func init() {
 	flag.Int("tks-api-port", 9110, "server port number for tks-api")
 	flag.String("tks-api-account", "admin", "account name for tks-api")
 	flag.String("tks-api-password", "admin", "the password for tks-api account")
+	flag.String("kubeconfig-path", "", "path of kubeconfig. used development only!")
 
 	flag.String("dbhost", "localhost", "host of postgreSQL")
 	flag.String("dbport", "5432", "port of postgreSQL")
@@ -47,58 +51,63 @@ func init() {
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	flag.Parse()
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
-		log.Error("Failed to bindFlags ", err)
+		log.Error(context.TODO(), "Failed to bindFlags ", err)
 	}
 
 }
 
 func main() {
-	log.Info("*** Arguments *** ")
+	log.Info(context.TODO(), "*** Arguments *** ")
 	for i, s := range viper.AllSettings() {
-		log.Info(fmt.Sprintf("%s : %v", i, s))
+		log.Info(context.TODO(), fmt.Sprintf("%s : %v", i, s))
 	}
-	log.Info("****************** ")
+	log.Info(context.TODO(), "****************** ")
 
 	// Initialize database
 	db, err := database.InitDB()
 	if err != nil {
-		log.Fatal("cannot connect gormDB")
+		log.Fatal(context.TODO(), "cannot connect gormDB")
 	}
 	clusterAccessor = cluster.New(db)
 	applicationAccessor = application.New(db)
 	cloudAccountAccessor = cloudAccount.New(db)
 	organizationAccessor = organization.New(db)
+	systemNotificationRuleAccessor = systemNotificationRule.New(db)
 
 	// initialize external clients
 	argowfClient, err = argo.New(viper.GetString("argo-address"), viper.GetInt("argo-port"), false, "")
 	if err != nil {
-		log.Fatal("failed to create argowf client : ", err)
+		log.Fatal(context.TODO(), "failed to create argowf client : ", err)
 	}
 	apiClient, err = _apiClient.New(fmt.Sprintf("%s:%d", viper.GetString("tks-api-address"), viper.GetInt("tks-api-port")))
 	if err != nil {
-		log.Fatal("failed to create tks-api client : ", err)
+		log.Fatal(context.TODO(), "failed to create tks-api client : ", err)
 	}
 
 	for {
 		err = processClusterStatus()
 		if err != nil {
-			log.Error(err)
+			log.Error(context.TODO(), err)
 		}
 		err = processAppGroupStatus()
 		if err != nil {
-			log.Error(err)
+			log.Error(context.TODO(), err)
 		}
 		err = processCloudAccountStatus()
 		if err != nil {
-			log.Error(err)
+			log.Error(context.TODO(), err)
 		}
 		err = processOrganizationStatus()
 		if err != nil {
-			log.Error(err)
+			log.Error(context.TODO(), err)
 		}
 		err = processClusterByoh()
 		if err != nil {
-			log.Error(err)
+			log.Error(context.TODO(), err)
+		}
+		err = processSystemNotificationRule()
+		if err != nil {
+			log.Error(context.TODO(), err)
 		}
 
 		time.Sleep(time.Second * INTERVAL_SEC)
