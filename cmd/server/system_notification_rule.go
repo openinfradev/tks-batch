@@ -21,8 +21,8 @@ type RuleAnnotation struct {
 	Discriminative           string `yaml:"discriminative"`
 	Message                  string `yaml:"message"`
 	Summary                  string `yaml:"summary"`
-	AlertType                string `json:"alertType"`
-	SystemNotificationRuleId string `json:"systemNotificationRuleId"`
+	AlertType                string `yaml:"alertType"`
+	SystemNotificationRuleId string `yaml:"systemNotificationRuleId"`
 }
 
 type RuleLabels struct {
