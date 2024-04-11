@@ -16,11 +16,13 @@ import (
 )
 
 type RuleAnnotation struct {
-	CheckPoint     string `yaml:"CheckPoint"`
-	Description    string `yaml:"description"`
-	Discriminative string `yaml:"discriminative"`
-	Message        string `yaml:"message"`
-	Summary        string `yaml:"summary"`
+	CheckPoint               string `yaml:"CheckPoint"`
+	Description              string `yaml:"description"`
+	Discriminative           string `yaml:"discriminative"`
+	Message                  string `yaml:"message"`
+	Summary                  string `yaml:"summary"`
+	AlertType                string `json:"alertType"`
+	SystemNotificationRuleId string `json:"systemNotificationRuleId"`
 }
 
 type RuleLabels struct {
@@ -104,10 +106,12 @@ func processSystemNotificationRule() error {
 				Expr:  expr,
 				For:   rule.SystemNotificationCondition.Duration,
 				Annotations: RuleAnnotation{
-					CheckPoint:     replaceMetricParameter(rule.SystemNotificationTemplate.MetricParameters, rule.MessageActionProposal),
-					Description:    replaceMetricParameter(rule.SystemNotificationTemplate.MetricParameters, rule.MessageContent),
-					Message:        replaceMetricParameter(rule.SystemNotificationTemplate.MetricParameters, rule.MessageTitle),
-					Discriminative: discriminative,
+					CheckPoint:               replaceMetricParameter(rule.SystemNotificationTemplate.MetricParameters, rule.MessageActionProposal),
+					Description:              replaceMetricParameter(rule.SystemNotificationTemplate.MetricParameters, rule.MessageContent),
+					Message:                  replaceMetricParameter(rule.SystemNotificationTemplate.MetricParameters, rule.MessageTitle),
+					Discriminative:           discriminative,
+					AlertType:                rule.NotificationType,
+					SystemNotificationRuleId: rule.ID.String(),
 				},
 				Labels: RuleLabels{
 					Severity: rule.SystemNotificationCondition.Severity,
@@ -178,7 +182,7 @@ func processSystemNotificationRule() error {
 				organizationRuleIds = append(organizationRuleIds, r.ID)
 			}
 		}
-		err = systemNotificationRuleAccessor.UpdateSystemNotificationRuleStatus(organizationRuleIds, domain.SystemNotificationRuleStatus_APPLYED)
+		err = systemNotificationRuleAccessor.UpdateSystemNotificationRuleStatus(organizationRuleIds, domain.SystemNotificationRuleStatus_APPLIED)
 		if err != nil {
 			log.Error(context.TODO(), err)
 			continue
