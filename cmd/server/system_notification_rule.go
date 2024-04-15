@@ -15,6 +15,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const RULER_FILE_NAME = "ruler-user.yaml"
+
 type RuleAnnotation struct {
 	CheckPoint               string `yaml:"CheckPoint"`
 	Description              string `yaml:"description"`
@@ -136,7 +138,7 @@ func processSystemNotificationRule() error {
 		}
 
 		var rulerConfig RulerConfig
-		err = yaml.Unmarshal([]byte(cm.Data["ruler.yml"]), &rulerConfig)
+		err = yaml.Unmarshal([]byte(cm.Data[RULER_FILE_NAME]), &rulerConfig)
 		if err != nil {
 			log.Error(context.TODO(), err)
 			continue
@@ -157,7 +159,7 @@ func processSystemNotificationRule() error {
 			log.Error(context.TODO(), err)
 			continue
 		}
-		cm.Data["ruler.yml"] = string(b)
+		cm.Data[RULER_FILE_NAME] = string(b)
 
 		_, err = clientset.CoreV1().ConfigMaps("lma").Update(context.TODO(), cm, metav1.UpdateOptions{})
 		if err != nil {

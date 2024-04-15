@@ -99,7 +99,7 @@ func (x *SystemNotificationAccessor) GetIncompletedRules() ([]SystemNotification
 		Joins("join clusters on clusters.id = organizations.primary_cluster_id AND clusters.status = ?", domain.ClusterStatus_RUNNING).
 		Joins("join app_groups on app_groups.cluster_id = clusters.id AND app_groups.status = ?", domain.AppGroupStatus_RUNNING).
 		Where("system_notification_rules.status = ?", domain.SystemNotificationRuleStatus_PENDING).
-		//Where("system_notification_rules.is_system = true"). // FOR TEST!!!!
+		//Where("system_notification_rules.is_system = false").
 		Order("system_notification_rules.organization_id").
 		Find(&rules)
 
