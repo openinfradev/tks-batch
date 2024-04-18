@@ -15,7 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const RULER_FILE_NAME = "ruler-user.yaml"
+const RULER_FILE_NAME = "ruler-user.yml"
 
 type RuleAnnotation struct {
 	CheckPoint               string `yaml:"CheckPoint"`
