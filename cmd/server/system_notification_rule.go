@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gofrs/uuid"
 	"github.com/openinfradev/tks-api/pkg/domain"
 	"github.com/openinfradev/tks-api/pkg/kubernetes"
 	"github.com/openinfradev/tks-api/pkg/log"
@@ -45,11 +44,8 @@ type RulerConfigGroup struct {
 }
 
 type RulerConfig struct {
-	Groups           []RulerConfigGroup `yaml:"groups"`
-	PrimaryClusterId string             `yaml:"-"`
+	Groups []RulerConfigGroup `yaml:"groups"`
 }
-
-var rulerConfigOrganizations map[string]RulerConfig
 
 func processSystemNotificationRule() error {
 	rules, err := systemNotificationRuleAccessor.GetIncompletedRules()
@@ -61,153 +57,53 @@ func processSystemNotificationRule() error {
 	}
 	log.Info(context.TODO(), "incompleted rules : ", len(rules))
 
-	rulerConfigOrganizations = make(map[string]RulerConfig)
+	incompletedOrganizations := []string{}
 
 	for _, rule := range rules {
-		config, exists := rulerConfigOrganizations[rule.OrganizationId]
-		if !exists {
-			config = RulerConfig{
-				PrimaryClusterId: rule.Organization.PrimaryClusterId,
-			}
-			config.Groups = make([]RulerConfigGroup, 1)
-			config.Groups[0] = RulerConfigGroup{
-				Name: "tks",
-			}
-			config.Groups[0].Rules = make([]Rule, 0)
-
-			rulerConfigOrganizations[rule.OrganizationId] = config
-		}
-
-		var parameters []domain.SystemNotificationParameter
-		err = json.Unmarshal(rule.SystemNotificationCondition.Parameter, &parameters)
-		if err != nil {
-			log.Error(context.TODO(), err)
-		}
-
-		// expr
-		expr := rule.SystemNotificationTemplate.MetricQuery
-		if len(parameters) == 1 {
-			expr = fmt.Sprintf("%s %s %s", expr, parameters[0].Operator, parameters[0].Value)
-		} else {
-			log.Error(context.TODO(), "Not support multiple parameters")
-		}
-
-		// metric paramters
-		discriminative := ""
-		for i, parameter := range rule.SystemNotificationTemplate.MetricParameters {
-			if i == 0 {
-				discriminative = parameter.Value
-			} else {
-				discriminative = discriminative + ", " + parameter.Value
+		exist := false
+		for _, organization := range incompletedOrganizations {
+			if organization == rule.Organization.ID {
+				exist = true
+				break
 			}
 		}
-
-		rulerConfigOrganizations[rule.OrganizationId].Groups[0].Rules = append(rulerConfigOrganizations[rule.OrganizationId].Groups[0].Rules,
-			Rule{
-				Alert: rule.Name,
-				Expr:  expr,
-				For:   rule.SystemNotificationCondition.Duration,
-				Annotations: RuleAnnotation{
-					CheckPoint:               replaceMetricParameter(rule.SystemNotificationTemplate.MetricParameters, rule.MessageActionProposal),
-					Description:              replaceMetricParameter(rule.SystemNotificationTemplate.MetricParameters, rule.MessageContent),
-					Message:                  replaceMetricParameter(rule.SystemNotificationTemplate.MetricParameters, rule.MessageTitle),
-					Discriminative:           discriminative,
-					AlertType:                rule.NotificationType,
-					SystemNotificationRuleId: rule.ID.String(),
-				},
-				Labels: RuleLabels{
-					Severity: rule.SystemNotificationCondition.Severity,
-				},
-			},
-		)
+		if !exist {
+			incompletedOrganizations = append(incompletedOrganizations, rule.Organization.ID)
+		}
 	}
 
-	for organizationId, rc := range rulerConfigOrganizations {
-		log.Infof(context.TODO(), "organizationId [%s] primaryClusterId [%s] ", organizationId, rc.PrimaryClusterId)
-
-		clientset, err := kubernetes.GetClientFromClusterId(context.TODO(), rc.PrimaryClusterId)
+	for _, organizationId := range incompletedOrganizations {
+		systemNotificationRules, err := systemNotificationRuleAccessor.GetRules(organizationId)
 		if err != nil {
 			log.Error(context.TODO(), err)
 			continue
 		}
 
-		cm, err := clientset.CoreV1().ConfigMaps("lma").Get(context.TODO(), "thanos-ruler-configmap", metav1.GetOptions{})
-		if err != nil {
-			log.Error(context.TODO(), err)
+		if len(rules) == 0 {
+			continue
+		}
+		primaryClusterId := rules[0].Organization.PrimaryClusterId
+		if primaryClusterId == "" {
+			log.Error(context.TODO(), fmt.Sprintf("Invalid primary cluster for organization %s", organizationId))
 			continue
 		}
 
-		var rulerConfig RulerConfig
-		err = yaml.Unmarshal([]byte(cm.Data[RULER_FILE_NAME]), &rulerConfig)
+		log.Infof(context.TODO(), "imcompletedOrganizationId[%s] primaryClusterId[%s] rules[%d]", organizationId, primaryClusterId, len(rules))
+
+		config := RulerConfig{}
+		config.Groups = make([]RulerConfigGroup, 1)
+		config.Groups[0] = RulerConfigGroup{
+			Name: "tks",
+		}
+		config.Groups[0].Rules = make([]Rule, 0)
+		for _, systemNotificationRule := range systemNotificationRules {
+			rule := makeRuleForConfigMap(systemNotificationRule)
+			config.Groups[0].Rules = append(config.Groups[0].Rules, rule)
+		}
+
+		err = applyRules(organizationId, primaryClusterId, config)
 		if err != nil {
-			log.Error(context.TODO(), err)
-			continue
-		}
-
-		if rc.Groups == nil || len(rc.Groups) == 0 {
-			continue
-		}
-
-		// Check exist
-		for _, systemNotificationRule := range rc.Groups[0].Rules {
-			exist := false
-			for i, rule := range rulerConfig.Groups[0].Rules {
-				if rule.Annotations.SystemNotificationRuleId == systemNotificationRule.Annotations.SystemNotificationRuleId {
-					rulerConfig.Groups[0].Rules[i] = systemNotificationRule
-					exist = true
-					break
-				}
-			}
-
-			if !exist {
-				rulerConfig.Groups[0].Rules = append(rulerConfig.Groups[0].Rules, systemNotificationRule)
-			}
-		}
-
-		//rulerConfig.Groups = rc.Groups
-
-		/*
-			outYaml, err := yaml.Marshal(rulerConfig)
-			if err != nil {
-				log.Error(context.TODO(), err)
-				continue
-			}
-			log.Info(context.TODO(), string(outYaml))
-		*/
-
-		b, err := yaml.Marshal(rulerConfig)
-		if err != nil {
-			log.Error(context.TODO(), err)
-			continue
-		}
-		cm.Data[RULER_FILE_NAME] = string(b)
-
-		_, err = clientset.CoreV1().ConfigMaps("lma").Update(context.TODO(), cm, metav1.UpdateOptions{})
-		if err != nil {
-			log.Error(context.TODO(), err)
-			continue
-		}
-
-		// restart thanos-ruler
-		deletePolicy := metav1.DeletePropagationForeground
-		err = clientset.CoreV1().Pods("lma").Delete(context.TODO(), "thanos-ruler-0", metav1.DeleteOptions{
-			PropagationPolicy: &deletePolicy,
-		})
-		if err != nil {
-			log.Error(context.TODO(), err)
-			continue
-		}
-
-		// update status
-		var organizationRuleIds []uuid.UUID
-		for _, r := range rules {
-			if r.OrganizationId == organizationId {
-				organizationRuleIds = append(organizationRuleIds, r.ID)
-			}
-		}
-		err = systemNotificationRuleAccessor.UpdateSystemNotificationRuleStatus(organizationRuleIds, domain.SystemNotificationRuleStatus_APPLIED)
-		if err != nil {
-			log.Error(context.TODO(), err)
+			log.Error(context.TODO(), fmt.Sprintf("Failed to apply rules. organizationId[%s] primaryClusterId[%s]", organizationId, primaryClusterId))
 			continue
 		}
 	}
@@ -230,3 +126,113 @@ func modelToYaml(in any) string {
 	return s
 }
 */
+
+func makeRuleForConfigMap(systemNotificationRule systemNotification.SystemNotificationRule) Rule {
+	var parameters []domain.SystemNotificationParameter
+	err := json.Unmarshal(systemNotificationRule.SystemNotificationCondition.Parameter, &parameters)
+	if err != nil {
+		log.Error(context.TODO(), err)
+	}
+
+	// expr
+	expr := systemNotificationRule.SystemNotificationTemplate.MetricQuery
+	if len(parameters) == 1 {
+		expr = fmt.Sprintf("%s %s %s", expr, parameters[0].Operator, parameters[0].Value)
+	} else {
+		log.Error(context.TODO(), "Not support multiple parameters")
+	}
+
+	// metric paramters
+	discriminative := ""
+	for i, parameter := range systemNotificationRule.SystemNotificationTemplate.MetricParameters {
+		if i == 0 {
+			discriminative = parameter.Value
+		} else {
+			discriminative = discriminative + ", " + parameter.Value
+		}
+	}
+
+	return Rule{
+		Alert: systemNotificationRule.Name,
+		Expr:  expr,
+		For:   systemNotificationRule.SystemNotificationCondition.Duration,
+		Annotations: RuleAnnotation{
+			CheckPoint:               replaceMetricParameter(systemNotificationRule.SystemNotificationTemplate.MetricParameters, systemNotificationRule.MessageActionProposal),
+			Description:              replaceMetricParameter(systemNotificationRule.SystemNotificationTemplate.MetricParameters, systemNotificationRule.MessageContent),
+			Message:                  replaceMetricParameter(systemNotificationRule.SystemNotificationTemplate.MetricParameters, systemNotificationRule.MessageTitle),
+			Discriminative:           discriminative,
+			AlertType:                systemNotificationRule.NotificationType,
+			SystemNotificationRuleId: systemNotificationRule.ID.String(),
+		},
+		Labels: RuleLabels{
+			Severity: systemNotificationRule.SystemNotificationCondition.Severity,
+		},
+	}
+}
+
+func applyRules(organizationId string, primaryClusterId string, rc RulerConfig) (err error) {
+	clientset, err := kubernetes.GetClientFromClusterId(context.TODO(), primaryClusterId)
+	if err != nil {
+		log.Error(context.TODO(), err)
+		return err
+	}
+
+	cm, err := clientset.CoreV1().ConfigMaps("lma").Get(context.TODO(), "thanos-ruler-configmap", metav1.GetOptions{})
+	if err != nil {
+		log.Error(context.TODO(), err)
+		return err
+	}
+
+	var rulerConfig RulerConfig
+	err = yaml.Unmarshal([]byte(cm.Data[RULER_FILE_NAME]), &rulerConfig)
+	if err != nil {
+		log.Error(context.TODO(), err)
+		return err
+	}
+
+	if rc.Groups == nil || len(rc.Groups) == 0 {
+		return fmt.Errorf("empty rc.Groups")
+	}
+
+	rulerConfig.Groups = rc.Groups
+
+	/*
+		outYaml, err := yaml.Marshal(rulerConfig)
+		if err != nil {
+			log.Error(context.TODO(), err)
+			continue
+		}
+		log.Info(context.TODO(), string(outYaml))
+	*/
+
+	b, err := yaml.Marshal(rulerConfig)
+	if err != nil {
+		log.Error(context.TODO(), err)
+		return err
+	}
+	cm.Data[RULER_FILE_NAME] = string(b)
+
+	_, err = clientset.CoreV1().ConfigMaps("lma").Update(context.TODO(), cm, metav1.UpdateOptions{})
+	if err != nil {
+		log.Error(context.TODO(), err)
+		return err
+	}
+
+	// restart thanos-ruler
+	deletePolicy := metav1.DeletePropagationForeground
+	err = clientset.CoreV1().Pods("lma").Delete(context.TODO(), "thanos-ruler-0", metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	})
+	if err != nil {
+		log.Error(context.TODO(), err)
+		return err
+	}
+
+	// update status
+	err = systemNotificationRuleAccessor.UpdateSystemNotificationRuleStatus(organizationId, domain.SystemNotificationRuleStatus_APPLIED)
+	if err != nil {
+		log.Error(context.TODO(), err)
+		return err
+	}
+	return nil
+}
