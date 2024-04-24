@@ -143,7 +143,28 @@ func processSystemNotificationRule() error {
 			log.Error(context.TODO(), err)
 			continue
 		}
-		rulerConfig.Groups = rc.Groups
+
+		if rc.Groups == nil || len(rc.Groups) == 0 {
+			continue
+		}
+
+		// Check exist
+		for _, systemNotificationRule := range rc.Groups[0].Rules {
+			exist := false
+			for i, rule := range rulerConfig.Groups[0].Rules {
+				if rule.Annotations.SystemNotificationRuleId == systemNotificationRule.Annotations.SystemNotificationRuleId {
+					rulerConfig.Groups[0].Rules[i] = systemNotificationRule
+					exist = true
+					break
+				}
+			}
+
+			if !exist {
+				rulerConfig.Groups[0].Rules = append(rulerConfig.Groups[0].Rules, systemNotificationRule)
+			}
+		}
+
+		//rulerConfig.Groups = rc.Groups
 
 		/*
 			outYaml, err := yaml.Marshal(rulerConfig)
