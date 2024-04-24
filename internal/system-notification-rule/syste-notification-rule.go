@@ -101,6 +101,7 @@ func (x *SystemNotificationAccessor) GetIncompletedRules() ([]SystemNotification
 		Where("system_notification_rules.status = ?", domain.SystemNotificationRuleStatus_PENDING).
 		//Where("system_notification_rules.is_system = false").
 		Order("system_notification_rules.organization_id").
+		Unscoped().
 		Find(&rules)
 
 	if res.Error != nil {
@@ -110,14 +111,32 @@ func (x *SystemNotificationAccessor) GetIncompletedRules() ([]SystemNotification
 	return rules, nil
 }
 
-func (x SystemNotificationAccessor) UpdateSystemNotificationRuleStatus(ruleIds []uuid.UUID, status domain.SystemNotificationRuleStatus) error {
-	log.Info(context.TODO(), fmt.Sprintf("SystemNotificationRuleClusterStatus. Ids[%v], status[%d]", ruleIds, status))
+func (x *SystemNotificationAccessor) GetRules(organizationId string) ([]SystemNotificationRule, error) {
+	var rules []SystemNotificationRule
+
+	res := x.db.Model(&SystemNotificationRule{}).
+		Preload(clause.Associations).
+		Preload("SystemNotificationTemplate.MetricParameters").
+		Joins("join organizations on organizations.id = system_notification_rules.organization_id").
+		Where("organization_id = ?", organizationId).
+		Find(&rules)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return rules, nil
+}
+
+func (x SystemNotificationAccessor) UpdateSystemNotificationRuleStatus(organizationId string, status domain.SystemNotificationRuleStatus) error {
+	log.Info(context.TODO(), fmt.Sprintf("organizationId[%v], status[%d]", organizationId, status))
 	res := x.db.Model(SystemNotificationRule{}).
-		Where("ID in ?", ruleIds).
+		Where("organization_id = ?", organizationId).
+		Unscoped().
 		Updates(map[string]interface{}{"Status": status})
 
 	if res.Error != nil || res.RowsAffected == 0 {
-		return fmt.Errorf("nothing updated in SystemNotificationRuleClusterStatus with ids %s", ruleIds)
+		return fmt.Errorf("nothing updated in SystemNotificationRuleStatus with organizationId %s", organizationId)
 	}
 	return nil
 }
