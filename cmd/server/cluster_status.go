@@ -17,7 +17,7 @@ func processClusterStatus() error {
 	if len(clusters) == 0 {
 		return nil
 	}
-	log.Info(context.TODO(), "clusters : ", clusters)
+	log.Info(context.TODO(), "[processClusterStatus] clusters : ", clusters)
 
 	for i := range clusters {
 		cluster := clusters[i]

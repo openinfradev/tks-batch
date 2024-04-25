@@ -17,7 +17,7 @@ func processOrganizationStatus() error {
 	if len(organizations) == 0 {
 		return nil
 	}
-	log.Info(context.TODO(), "organizations : ", organizations)
+	log.Info(context.TODO(), "[processOrganizationStatus] organizations : ", organizations)
 
 	for i := range organizations {
 		organization := organizations[i]

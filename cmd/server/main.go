@@ -109,7 +109,10 @@ func main() {
 		if err != nil {
 			log.Error(context.TODO(), err)
 		}
-
+		err = processReloadThanosRules()
+		if err != nil {
+			log.Error(context.TODO(), err)
+		}
 		time.Sleep(time.Second * INTERVAL_SEC)
 	}
 

@@ -18,7 +18,7 @@ func processAppGroupStatus() error {
 	if len(appGroups) == 0 {
 		return nil
 	}
-	log.Info(context.TODO(), "appGroups : ", appGroups)
+	log.Info(context.TODO(), "[processAppGroupStatus] appGroups : ", appGroups)
 
 	for i := range appGroups {
 		appGroup := appGroups[i]

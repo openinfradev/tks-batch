@@ -22,7 +22,7 @@ func processClusterByoh() error {
 	if len(clusters) == 0 {
 		return nil
 	}
-	log.Info(context.TODO(), "byoh clusters : ", clusters)
+	log.Info(context.TODO(), "[processClusterByoh] byoh clusters : ", clusters)
 
 	token = getTksApiToken()
 	if token != "" {

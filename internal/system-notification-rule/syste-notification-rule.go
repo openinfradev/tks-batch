@@ -99,8 +99,6 @@ func (x *SystemNotificationAccessor) GetIncompletedRules() ([]SystemNotification
 		Joins("join clusters on clusters.id = organizations.primary_cluster_id AND clusters.status = ?", domain.ClusterStatus_RUNNING).
 		Joins("join app_groups on app_groups.cluster_id = clusters.id AND app_groups.status = ?", domain.AppGroupStatus_RUNNING).
 		Where("system_notification_rules.status = ?", domain.SystemNotificationRuleStatus_PENDING).
-		//Where("system_notification_rules.is_system = false").
-		Order("system_notification_rules.organization_id").
 		Unscoped().
 		Find(&rules)
 
@@ -109,6 +107,26 @@ func (x *SystemNotificationAccessor) GetIncompletedRules() ([]SystemNotification
 	}
 
 	return rules, nil
+}
+
+func (x *SystemNotificationAccessor) GetRecentlyUpdatedOrganizations(lastUpdateMin int) ([]string, error) {
+	var organizationIds []string
+
+	res := x.db.Model(&SystemNotificationRule{}).
+		Select("system_notification_rules.organization_id").
+		Joins("join organizations on organizations.id = system_notification_rules.organization_id").
+		Joins("join clusters on clusters.id = organizations.primary_cluster_id AND clusters.status = ?", domain.ClusterStatus_RUNNING).
+		Joins("join app_groups on app_groups.cluster_id = clusters.id AND app_groups.status = ?", domain.AppGroupStatus_RUNNING).
+		Where("system_notification_rules.status = ?", domain.SystemNotificationRuleStatus_APPLIED).
+		Where(fmt.Sprintf("system_notification_rules.updated_at between now()-interval '%d minutes' and now() OR system_notification_rules.deleted_at between now()-interval '%d minutes' and now()", lastUpdateMin, lastUpdateMin)).
+		Group("system_notification_rules.organization_id").
+		Unscoped().
+		Find(&organizationIds)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return organizationIds, nil
 }
 
 func (x *SystemNotificationAccessor) GetRules(organizationId string) ([]SystemNotificationRule, error) {
