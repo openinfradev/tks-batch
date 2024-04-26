@@ -12,10 +12,11 @@ import (
 
 // Organization represents a kubernetes organization information.
 type Organization struct {
-	ID         string `gorm:"primarykey"`
-	WorkflowId string
-	Status     domain.OrganizationStatus
-	StatusDesc string
+	ID               string `gorm:"primarykey"`
+	WorkflowId       string
+	Status           domain.OrganizationStatus
+	StatusDesc       string
+	PrimaryClusterId string
 }
 
 // Accessor accesses organization info in DB.
@@ -47,6 +48,15 @@ func (x *OrganizationAccessor) GetIncompleteOrganizations() ([]Organization, err
 	}
 
 	return organizations, nil
+}
+
+func (x *OrganizationAccessor) Get(id string) (organization Organization, err error) {
+	res := x.db.Where("id = ?", id).First(&organization)
+	if res.Error != nil {
+		return organization, res.Error
+	}
+
+	return
 }
 
 func (x *OrganizationAccessor) UpdateOrganizationStatus(organizationId string, status domain.OrganizationStatus, statusDesc string, workflowId string) error {

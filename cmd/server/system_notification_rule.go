@@ -55,7 +55,7 @@ func processSystemNotificationRule() error {
 	if len(rules) == 0 {
 		return nil
 	}
-	log.Info(context.TODO(), "incompleted rules : ", len(rules))
+	log.Info(context.TODO(), "[processSystemNotificationRule] incompleted rules : ", len(rules))
 
 	incompletedOrganizations := []string{}
 
@@ -219,14 +219,17 @@ func applyRules(organizationId string, primaryClusterId string, rc RulerConfig) 
 	}
 
 	// restart thanos-ruler
-	deletePolicy := metav1.DeletePropagationForeground
-	err = clientset.CoreV1().Pods("lma").Delete(context.TODO(), "thanos-ruler-0", metav1.DeleteOptions{
-		PropagationPolicy: &deletePolicy,
-	})
-	if err != nil {
-		log.Error(context.TODO(), err)
-		return err
-	}
+	// thanos-ruler reload 방식으로 변경했으나, 혹시 몰라 일단 코드는 주석처리해둠
+	/*
+		deletePolicy := metav1.DeletePropagationForeground
+		err = clientset.CoreV1().Pods("lma").Delete(context.TODO(), "thanos-ruler-0", metav1.DeleteOptions{
+			PropagationPolicy: &deletePolicy,
+		})
+		if err != nil {
+			log.Error(context.TODO(), err)
+			return err
+		}
+	*/
 
 	// update status
 	err = systemNotificationRuleAccessor.UpdateSystemNotificationRuleStatus(organizationId, domain.SystemNotificationRuleStatus_APPLIED)

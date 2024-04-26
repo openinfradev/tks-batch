@@ -17,7 +17,7 @@ func processCloudAccountStatus() error {
 	if len(cloudAccounts) == 0 {
 		return nil
 	}
-	log.Info(context.TODO(), "cloudAccounts : ", cloudAccounts)
+	log.Info(context.TODO(), "[processCloudAccountStatus] cloudAccounts : ", cloudAccounts)
 
 	for i := range cloudAccounts {
 		cloudaccount := cloudAccounts[i]
