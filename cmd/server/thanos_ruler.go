@@ -9,11 +9,12 @@ import (
 
 	"github.com/openinfradev/tks-api/pkg/kubernetes"
 	"github.com/openinfradev/tks-api/pkg/log"
+	gcache "github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const LAST_UPDATED_MIN = 1
+const LAST_UPDATED_MIN = 2
 
 func processReloadThanosRules() error {
 	organizationIds, err := systemNotificationRuleAccessor.GetRecentlyUpdatedOrganizations(LAST_UPDATED_MIN)
@@ -48,6 +49,13 @@ func processReloadThanosRules() error {
 }
 
 func GetThanosRulerUrl(primaryClusterId string) (url string, err error) {
+	const prefix = "CACHE_KEY_THANOS_RULER_URL"
+	value, found := cache.Get(prefix + primaryClusterId)
+	if found {
+		log.Info(context.TODO(), "Cache HIT [CACHE_KEY_THANOS_RULER_URL] ", value)
+		return value.(string), nil
+	}
+
 	clientset_admin, err := kubernetes.GetClientAdminCluster(context.TODO())
 	if err != nil {
 		return url, errors.Wrap(err, "Failed to get client set for user cluster")
@@ -80,6 +88,8 @@ func GetThanosRulerUrl(primaryClusterId string) (url string, err error) {
 	} else {
 		url = "http://" + string(secrets.Data["thanos-ruler"])
 	}
+
+	cache.Set(prefix+primaryClusterId, url, gcache.DefaultExpiration)
 	return url, nil
 }
 

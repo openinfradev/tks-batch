@@ -9,15 +9,15 @@ import (
 	_apiClient "github.com/openinfradev/tks-api/pkg/api-client"
 	argo "github.com/openinfradev/tks-api/pkg/argo-client"
 	"github.com/openinfradev/tks-api/pkg/log"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
-
 	"github.com/openinfradev/tks-batch/internal/application"
 	cloudAccount "github.com/openinfradev/tks-batch/internal/cloud-account"
 	"github.com/openinfradev/tks-batch/internal/cluster"
 	"github.com/openinfradev/tks-batch/internal/database"
 	"github.com/openinfradev/tks-batch/internal/organization"
 	systemNotificationRule "github.com/openinfradev/tks-batch/internal/system-notification-rule"
+	gcache "github.com/patrickmn/go-cache"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 const INTERVAL_SEC = 5
@@ -30,6 +30,7 @@ var (
 	organizationAccessor           *organization.OrganizationAccessor
 	systemNotificationRuleAccessor *systemNotificationRule.SystemNotificationAccessor
 	apiClient                      _apiClient.ApiClient
+	cache                          *gcache.Cache
 )
 
 func init() {
@@ -83,6 +84,8 @@ func main() {
 	if err != nil {
 		log.Fatal(context.TODO(), "failed to create tks-api client : ", err)
 	}
+
+	cache = gcache.New(5*time.Minute, 10*time.Minute)
 
 	for {
 		err = processClusterStatus()
