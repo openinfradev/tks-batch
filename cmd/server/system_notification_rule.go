@@ -24,6 +24,8 @@ type RuleAnnotation struct {
 	Summary                  string `yaml:"summary"`
 	AlertType                string `yaml:"alertType"`
 	SystemNotificationRuleId string `yaml:"systemNotificationRuleId"`
+	PolicyName               string `yaml:"policyName"`
+	PolicyTemplateName       string `yaml:"policyTemplateName"`
 }
 
 type RuleLabels struct {
@@ -127,7 +129,7 @@ func modelToYaml(in any) string {
 }
 */
 
-func makeRuleForConfigMap(systemNotificationRule systemNotification.SystemNotificationRule) Rule {
+func makeRuleForConfigMap(systemNotificationRule systemNotification.SystemNotificationRule) (out Rule) {
 	var parameters []domain.SystemNotificationParameter
 	err := json.Unmarshal(systemNotificationRule.SystemNotificationCondition.Parameter, &parameters)
 	if err != nil {
@@ -152,7 +154,7 @@ func makeRuleForConfigMap(systemNotificationRule systemNotification.SystemNotifi
 		}
 	}
 
-	return Rule{
+	out = Rule{
 		Alert: systemNotificationRule.Name,
 		Expr:  expr,
 		For:   systemNotificationRule.SystemNotificationCondition.Duration,
@@ -168,6 +170,13 @@ func makeRuleForConfigMap(systemNotificationRule systemNotification.SystemNotifi
 			Severity: systemNotificationRule.SystemNotificationCondition.Severity,
 		},
 	}
+
+	if systemNotificationRule.NotificationType == "POLICY_NOTIFICATION" {
+		out.Annotations.PolicyName = "{{$labels.name}}"
+		out.Annotations.PolicyTemplateName = "{{$labels.kind}}"
+	}
+
+	return out
 }
 
 func applyRules(organizationId string, primaryClusterId string, rc RulerConfig) (err error) {
