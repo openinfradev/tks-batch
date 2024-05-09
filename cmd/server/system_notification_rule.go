@@ -23,9 +23,9 @@ type RuleAnnotation struct {
 	Message                  string `yaml:"message"`
 	Summary                  string `yaml:"summary"`
 	AlertType                string `yaml:"alertType"`
-	SystemNotificationRuleId string `yaml:"systemNotificationRuleId"`
-	PolicyName               string `yaml:"policyName"`
-	PolicyTemplateName       string `yaml:"policyTemplateName"`
+	SystemNotificationRuleId string `yaml:"systemNotificationRuleId,omitempty"`
+	PolicyName               string `yaml:"policyName,omitempty"`
+	PolicyTemplateName       string `yaml:"policyTemplateName,omitempty"`
 }
 
 type RuleLabels struct {
