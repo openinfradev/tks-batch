@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/openinfradev/tks-api/pkg/domain"
@@ -16,7 +17,7 @@ func processOrganizationStatus() error {
 	if len(organizations) == 0 {
 		return nil
 	}
-	log.Info("organizations : ", organizations)
+	log.Info(context.TODO(), "[processOrganizationStatus] organizations : ", organizations)
 
 	for i := range organizations {
 		organization := organizations[i]
@@ -31,14 +32,14 @@ func processOrganizationStatus() error {
 		var newMessage string
 
 		if workflowId != "" {
-			workflow, err := argowfClient.GetWorkflow("argo", workflowId)
+			workflow, err := argowfClient.GetWorkflow(context.TODO(), "argo", workflowId)
 			if err != nil {
-				log.Error("failed to get argo workflow. err : ", err)
+				log.Error(context.TODO(), "failed to get argo workflow. err : ", err)
 				continue
 			}
 
 			newMessage = fmt.Sprintf("(%s) %s", workflow.Status.Progress, workflow.Status.Message)
-			log.Debug(fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
+			log.Debug(context.TODO(), fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
 
 			if status == domain.OrganizationStatus_CREATING {
 				switch workflow.Status.Phase {
@@ -71,10 +72,10 @@ func processOrganizationStatus() error {
 		}
 
 		if status != newStatus || statusDesc != newMessage {
-			log.Debug(fmt.Sprintf("update status!! organizationId [%s], newStatus [%s], newMessage [%s]", organizationId, newStatus, newMessage))
+			log.Debug(context.TODO(), fmt.Sprintf("update status!! organizationId [%s], newStatus [%s], newMessage [%s]", organizationId, newStatus, newMessage))
 			err := organizationAccessor.UpdateOrganizationStatus(organizationId, newStatus, newMessage, workflowId)
 			if err != nil {
-				log.Error("Failed to update organization status err : ", err)
+				log.Error(context.TODO(), "Failed to update organization status err : ", err)
 				continue
 			}
 		}

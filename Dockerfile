@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 docker.io/library/golang:1.18-buster AS builder
+FROM --platform=linux/amd64 docker.io/library/golang:1.21 AS builder
 
 RUN mkdir -p /app
 WORKDIR /app
