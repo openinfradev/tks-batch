@@ -6,7 +6,7 @@ toolchain go1.21.7
 
 require (
 	github.com/gofrs/uuid v4.0.0+incompatible
-	github.com/openinfradev/tks-api v0.0.0-20240509015017-73cfae88477f
+	github.com/openinfradev/tks-api v0.0.0-20240626013032-da099b77eb0e
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/pflag v1.0.5
