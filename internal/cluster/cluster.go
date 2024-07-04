@@ -18,6 +18,7 @@ type Cluster struct {
 	Status         domain.ClusterStatus
 	StatusDesc     string
 	IsStack        bool
+	CloudService   string
 }
 
 // Accessor accesses cluster info in DB.
