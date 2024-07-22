@@ -46,11 +46,9 @@ func processClusterStatus() error {
 				case "Running":
 					newStatus = domain.ClusterStatus_INSTALLING
 
-					if cluster.CloudService == "BYOH" {
-						paused, err := argowfClient.IsPausedWorkflow(context.TODO(), "argo", workflowId)
-						if err == nil && paused {
-							newStatus = domain.ClusterStatus_STOPPED
-						}
+					paused, err := argowfClient.IsPausedWorkflow(context.TODO(), "argo", workflowId)
+					if err == nil && paused {
+						newStatus = domain.ClusterStatus_STOPPED
 					}
 				case "Stopped":
 					newStatus = domain.ClusterStatus_STOPPED
