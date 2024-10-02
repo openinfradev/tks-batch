@@ -45,6 +45,13 @@ func processClusterStatus() error {
 				switch workflow.Status.Phase {
 				case "Running":
 					newStatus = domain.ClusterStatus_INSTALLING
+
+					paused, err := argowfClient.IsPausedWorkflow(context.TODO(), "argo", workflowId)
+					if err == nil && paused {
+						newStatus = domain.ClusterStatus_STOPPED
+					}
+				case "Stopped":
+					newStatus = domain.ClusterStatus_STOPPED
 				case "Succeeded":
 					newStatus = domain.ClusterStatus_RUNNING
 				case "Failed":
