@@ -1,6 +1,7 @@
 package organization
 
 import (
+	"context"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -11,10 +12,11 @@ import (
 
 // Organization represents a kubernetes organization information.
 type Organization struct {
-	ID         string `gorm:"primarykey"`
-	WorkflowId string
-	Status     domain.OrganizationStatus
-	StatusDesc string
+	ID               string `gorm:"primarykey"`
+	WorkflowId       string
+	Status           domain.OrganizationStatus
+	StatusDesc       string
+	PrimaryClusterId string
 }
 
 // Accessor accesses organization info in DB.
@@ -48,8 +50,17 @@ func (x *OrganizationAccessor) GetIncompleteOrganizations() ([]Organization, err
 	return organizations, nil
 }
 
+func (x *OrganizationAccessor) Get(id string) (organization Organization, err error) {
+	res := x.db.Where("id = ?", id).First(&organization)
+	if res.Error != nil {
+		return organization, res.Error
+	}
+
+	return
+}
+
 func (x *OrganizationAccessor) UpdateOrganizationStatus(organizationId string, status domain.OrganizationStatus, statusDesc string, workflowId string) error {
-	log.Info(fmt.Sprintf("UpdateOrganizationStatus. organizationId[%s], status[%d], statusDesc[%s], workflowId[%s]", organizationId, status, statusDesc, workflowId))
+	log.Info(context.TODO(), fmt.Sprintf("UpdateOrganizationStatus. organizationId[%s], status[%d], statusDesc[%s], workflowId[%s]", organizationId, status, statusDesc, workflowId))
 	res := x.db.Model(Organization{}).
 		Where("ID = ?", organizationId).
 		Updates(map[string]interface{}{"Status": status, "StatusDesc": statusDesc, "WorkflowId": workflowId})

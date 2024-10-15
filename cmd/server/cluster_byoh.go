@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -21,7 +22,7 @@ func processClusterByoh() error {
 	if len(clusters) == 0 {
 		return nil
 	}
-	log.Info("byoh clusters : ", clusters)
+	log.Info(context.TODO(), "[processClusterByoh] byoh clusters : ", clusters)
 
 	token = getTksApiToken()
 	if token != "" {
@@ -34,7 +35,7 @@ func processClusterByoh() error {
 		url := fmt.Sprintf("clusters/%s/nodes", clusterId)
 		body, err := apiClient.Get(url)
 		if err != nil {
-			log.Error(err)
+			log.Error(context.TODO(), err)
 			continue
 		}
 
@@ -47,25 +48,25 @@ func processClusterByoh() error {
 				completed = false
 			}
 		}
-		log.Info(out.Nodes)
+		log.Info(context.TODO(), out.Nodes)
 
 		//completed = true // FOR TEST
 		if completed {
-			log.Info(fmt.Sprintf("all agents registered! starting stack creation. clusterId %s", clusterId))
+			log.Info(context.TODO(), fmt.Sprintf("all agents registered! starting stack creation. clusterId %s", clusterId))
 			// clusterId, newStatus, newMessage, workflowId
 			if err = clusterAccessor.UpdateClusterStatus(clusterId, domain.ClusterStatus_INSTALLING, "", ""); err != nil {
-				log.Error("Failed to update cluster status err : ", err)
+				log.Error(context.TODO(), "Failed to update cluster status err : ", err)
 				continue
 			}
 
 			if cluster.IsStack {
 				if _, err = apiClient.Post(fmt.Sprintf("organizations/%s/stacks/%s/install", cluster.OrganizationId, clusterId), nil); err != nil {
-					log.Error(err)
+					log.Error(context.TODO(), err)
 					continue
 				}
 			} else {
 				if _, err = apiClient.Post("clusters/"+clusterId+"/install", nil); err != nil {
-					log.Error(err)
+					log.Error(context.TODO(), err)
 					continue
 				}
 			}
@@ -88,10 +89,7 @@ func transcode(in, out interface{}) {
 }
 
 func getTksApiToken() string {
-	_, err := apiClient.Post("auth/ping", domain.PingTokenRequest{
-		Token:          token,
-		OrganizationId: "master",
-	})
+	_, err := apiClient.Get("auth/verify-token")
 	if err != nil {
 		body, err := apiClient.Post("auth/login", domain.LoginRequest{
 			AccountId:      viper.GetString("tks-api-account"),
@@ -105,7 +103,7 @@ func getTksApiToken() string {
 		var out domain.LoginResponse
 		transcode(body, &out)
 
-		log.Info(out.User.Token)
+		log.Info(context.TODO(), out.User.Token)
 		token = out.User.Token
 	}
 

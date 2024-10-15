@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/openinfradev/tks-api/pkg/domain"
@@ -16,7 +17,7 @@ func processCloudAccountStatus() error {
 	if len(cloudAccounts) == 0 {
 		return nil
 	}
-	log.Info("cloudAccounts : ", cloudAccounts)
+	log.Info(context.TODO(), "[processCloudAccountStatus] cloudAccounts : ", cloudAccounts)
 
 	for i := range cloudAccounts {
 		cloudaccount := cloudAccounts[i]
@@ -31,14 +32,14 @@ func processCloudAccountStatus() error {
 		var newMessage string
 
 		if workflowId != "" {
-			workflow, err := argowfClient.GetWorkflow("argo", workflowId)
+			workflow, err := argowfClient.GetWorkflow(context.TODO(), "argo", workflowId)
 			if err != nil {
-				log.Error("failed to get argo workflow. err : ", err)
+				log.Error(context.TODO(), "failed to get argo workflow. err : ", err)
 				continue
 			}
 
 			newMessage = fmt.Sprintf("(%s) %s", workflow.Status.Progress, workflow.Status.Message)
-			log.Debug(fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
+			log.Debug(context.TODO(), fmt.Sprintf("status [%s], newMessage [%s], phase [%s]", status, newMessage, workflow.Status.Phase))
 
 			if status == domain.CloudAccountStatus_CREATING {
 				switch workflow.Status.Phase {
@@ -71,17 +72,17 @@ func processCloudAccountStatus() error {
 		}
 
 		if status != newStatus || statusDesc != newMessage {
-			log.Debug(fmt.Sprintf("update status!! cloudAccountId [%s], newStatus [%s], newMessage [%s]", cloudAccountId, newStatus, newMessage))
+			log.Debug(context.TODO(), fmt.Sprintf("update status!! cloudAccountId [%s], newStatus [%s], newMessage [%s]", cloudAccountId, newStatus, newMessage))
 			err := cloudAccountAccessor.UpdateCloudAccountStatus(cloudAccountId, newStatus, newMessage, workflowId)
 			if err != nil {
-				log.Error("Failed to update cloudaccount status err : ", err)
+				log.Error(context.TODO(), "Failed to update cloudaccount status err : ", err)
 				continue
 			}
 
 			if newStatus == domain.CloudAccountStatus_CREATED {
 				err = cloudAccountAccessor.UpdateCreatedIAM(cloudAccountId, true)
 				if err != nil {
-					log.Error("Failed to update cloudaccount createdIAM err : ", err)
+					log.Error(context.TODO(), "Failed to update cloudaccount createdIAM err : ", err)
 					continue
 				}
 
