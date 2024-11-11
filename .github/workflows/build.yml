@@ -1,13 +1,18 @@
-name: Build only
+name: Build Image
 on:
-  pull_request:
+  pull_request_target:
+    branches:
+      - main
+      - develop
+      - release
 
 env:
   SERVICE: tks-batch
   TAG: ${{github.sha}}
+  REGISTRY: harbor.taco-cat.xyz
 
 jobs:
-  build-and-push-image:
+  build-image:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,13 +21,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ${{env.REGISTRY}}
+          username: ${{secrets.HARBOR_USERNAME}}
+          password: ${{secrets.HARBOR_SECRET}}
 
       - name: build image
         id: docker_build
@@ -30,4 +36,4 @@ jobs:
         with:
           push: false
           tags: |
-            sktcloud/${{env.SERVICE}}:${{env.TAG}}
+            ${{env.REGISTRY}}/tks/${{env.SERVICE}}:${{env.TAG}}
